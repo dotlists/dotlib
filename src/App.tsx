@@ -1,16 +1,12 @@
 import { useState } from 'react'
-import { Button } from './components/ui/button'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <div>
-        <p>Count: {count}</p>
-        <Button onClick={() => setCount(count + 1)}>Increment</Button>
-        <Button onClick={() => setCount(count - 1)}>Decrement</Button>
-      </div>
+      <main className="flex w-[80%] mx-auto mt-24">
+        <h1>My list</h1>
+      </main>
     </>
   )
 }
