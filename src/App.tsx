@@ -1,21 +1,51 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Textarea } from "./components/ui/textarea";
+import { Button } from "./components/ui/button";
+import { v4 as randomUUID } from "uuid";
 // types
 type Color = "red" | "yellow" | "green";
-type Node = { text: string; state: Color };
+type Node = { text: string; state: Color; uuid: string };
 type List = { id: number; name: string; nodes: Node[] };
 
 const stateOrder = { red: 0, yellow: 1, green: 2 };
 const stateOrderReversed: Color[] = ["red", "yellow", "green"];
 
-
-function StatusBar({ state }: { state: List }) {
+function StatusBar({
+  state,
+  setState,
+}: {
+  state: List;
+  setState: (_: List) => void;
+}) {
+  const addNode = useCallback(() => {
+    // clear any currently empty nodes
+    const newNodes = state.nodes.filter((n) => n.text.trim() !== "");
+    const newNode: Node = { text: "", state: "red", uuid: randomUUID() };
+    setState({ ...state, nodes: [...newNodes, newNode] });
+    setTimeout(() => {
+      const el = document.getElementById(newNode.uuid);
+      if (el) {
+        const textarea = el.querySelector("textarea");
+        if (textarea) {
+          textarea.focus();
+        }
+      }
+    }, 30);
+  }, [state, setState]);
+  useEffect(() => {
+    document.addEventListener("keydown", (e) => {
+      if (e.metaKey && e.key === "Enter") {
+        e.preventDefault();
+        addNode();
+      }
+    });
+  }, [addNode]);
   const nodes = state.nodes;
   const total = nodes.length || 1;
-  const redCount = nodes.filter(n => n.state === 'red').length;
-  const yellowCount = nodes.filter(n => n.state === 'yellow').length;
-  const greenCount = nodes.filter(n => n.state === 'green').length;
+  const redCount = nodes.filter((n) => n.state === "red").length;
+  const yellowCount = nodes.filter((n) => n.state === "yellow").length;
+  const greenCount = nodes.filter((n) => n.state === "green").length;
   const redPct = (redCount / total) * 100;
   const yellowPct = (yellowCount / total) * 100;
   const greenPct = (greenCount / total) * 100;
@@ -24,34 +54,37 @@ function StatusBar({ state }: { state: List }) {
     <div className="w-[100vw] h-[10vh] p-3">
       <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
         <div className="flex px-3 py-1">
-          <h2 className="font-bold border-r-gray-200 mr-auto">{state.name}</h2>
+          <h2 className="font-bold mr-10">{state.name}</h2>
           <h2 className="text-xl text-gray-500 mt-auto">
             {nodes.length} items
           </h2>
+          <Button variant="secondary" className="ml-auto" onClick={addNode}>
+            Add item
+          </Button>
         </div>
         <div className="flex h-12 w-full">
           <div
             className="transition-all duration-100"
             style={{
               width: `${redPct}%`,
-              backgroundColor: redCount > 0 ? '#ef4444' : 'transparent',
-              transition: 'width 0.3s'
+              backgroundColor: redCount > 0 ? "#ef4444" : "transparent",
+              transition: "width 0.3s",
             }}
           />
           <div
             className="transition-all duration-100"
             style={{
               width: `${yellowPct}%`,
-              backgroundColor: yellowCount > 0 ? '#fde047' : 'transparent',
-              transition: 'width 0.3s'
+              backgroundColor: yellowCount > 0 ? "#fde047" : "transparent",
+              transition: "width 0.3s",
             }}
           />
           <div
             className="transition-all duration-100"
             style={{
               width: `${greenPct}%`,
-              backgroundColor: greenCount > 0 ? '#4ade80' : 'transparent',
-              transition: 'width 0.3s'
+              backgroundColor: greenCount > 0 ? "#4ade80" : "transparent",
+              transition: "width 0.3s",
             }}
           />
         </div>
@@ -82,9 +115,11 @@ function ListEditor({
     setState({ ...state, nodes: newNodes });
   };
   return (
-    <motion.ul layout className="h-[90vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden">
+    <motion.ul
+      className="h-[90vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden"
+    >
       <AnimatePresence>
-        {sortedNodes.map(node => {
+        {sortedNodes.map((node) => {
           const colorClass =
             node.state === "red"
               ? "bg-red-500"
@@ -100,6 +135,7 @@ function ListEditor({
               exit={{ opacity: 0, y: -20 }}
               className="flex hover:bg-gray-100 rounded-xl my-2 py-2"
               key={index}
+              id={node.uuid}
             >
               <div
                 onClick={() => {
@@ -127,13 +163,13 @@ function ListEditor({
                   setNode(index, newNode);
                 }}
                 className="text-xl focus:outline-none w-full focus:ring-none"
-                style={{ resize: "none", overflowY: "auto"}}
+                style={{ resize: "none", overflowY: "auto" }}
                 rows={1}
                 ref={(el) => {
                   // This ref callback runs on mount. We can trigger the resize here.
                   if (el) {
-                    el.style.height = 'auto'; // Reset height
-                    el.style.height = el.scrollHeight + 'px'; // Set to content height
+                    el.style.height = "auto"; // Reset height
+                    el.style.height = el.scrollHeight + "px"; // Set to content height
                   }
                 }}
                 onLoad={(e) => {
@@ -142,8 +178,8 @@ function ListEditor({
                 }}
                 onInput={(e) => {
                   const textarea = e.currentTarget;
-                  textarea.style.height = 'auto'; // Reset height to recalculate scrollHeight
-                  textarea.style.height = textarea.scrollHeight + 'px'; // Set height to match content
+                  textarea.style.height = "auto"; // Reset height to recalculate scrollHeight
+                  textarea.style.height = textarea.scrollHeight + "px"; // Set height to match content
                 }}
                 onBlur={(e) => {
                   const trimmed = e.currentTarget.value.trim();
@@ -153,7 +189,7 @@ function ListEditor({
                     setNode(index, { ...node, text: trimmed });
                   }
                   const textarea = e.currentTarget;
-                  textarea.style.height = 'auto';
+                  textarea.style.height = "auto";
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Backspace" && node.text === "") {
@@ -162,11 +198,19 @@ function ListEditor({
                   }
                 }}
               />
+              <Button
+                onClick={() => deleteNode(index)}
+                variant="destructive"
+                className="h-7 rounded-full cursor-pointer mr-3"
+              >
+                Delete
+              </Button>
             </motion.li>
           );
         })}
       </AnimatePresence>
-    </motion.ul>);
+    </motion.ul>
+  );
 }
 
 export default function App() {
@@ -176,23 +220,87 @@ export default function App() {
       name: "Todo",
       nodes: [
         { text: "Can't stop thinking about if and when I die", state: "red" },
-        { text: "For now I see that 'if' and 'when' are truly different cries", state: "yellow" },
-        { text: "For if is purely panic and when is solemn sorrow", state: "yellow" },
-        { text: "And one invades today while the other spies tomorrow", state: "green" },
+        {
+          text: "For now I see that 'if' and 'when' are truly different cries",
+          state: "yellow",
+        },
+        {
+          text: "For if is purely panic and when is solemn sorrow",
+          state: "yellow",
+        },
+        {
+          text: "And one invades today while the other spies tomorrow",
+          state: "green",
+        },
         { text: "We're surrounded and we're hounded", state: "red" },
         { text: "There's no above, or under, or around it", state: "yellow" },
-        { text: "For above is blind belief and under is sword to sleeve", state: "yellow" },
-        { text: "And around is scientific miracle, let's pick above and see", state: "green" },
-        { text: "For if and when we go above, the question still remains", state: "red" },
-        { text: "Are we still in love and is it possible we feel the same?", state: "yellow" },
-        { text: "And that's when going under starts to take my wonder", state: "yellow" },
+        {
+          text: "For above is blind belief and under is sword to sleeve",
+          state: "yellow",
+        },
+        {
+          text: "And around is scientific miracle, let's pick above and see",
+          state: "green",
+        },
+        {
+          text: "For if and when we go above, the question still remains",
+          state: "red",
+        },
+        {
+          text: "Are we still in love and is it possible we feel the same?",
+          state: "yellow",
+        },
+        {
+          text: "And that's when going under starts to take my wonder",
+          state: "yellow",
+        },
         { text: "But until that time, I'll try to sing this", state: "green" },
         { text: "If I keep moving, they won't know", state: "red" },
         { text: "I'll morph to someone else", state: "yellow" },
         { text: "Defense mechanism mode", state: "green" },
         { text: "I'll morph to someone else", state: "yellow" },
         { text: "Defense mechanism mode", state: "green" },
-      ],
+        {
+          text: "For now I see that 'if' and 'when' are truly different cries",
+          state: "yellow",
+        },
+        {
+          text: "For if is purely panic and when is solemn sorrow",
+          state: "yellow",
+        },
+        {
+          text: "And one invades today while the other spies tomorrow",
+          state: "green",
+        },
+        { text: "We're surrounded and we're hounded", state: "red" },
+        { text: "There's no above, or under, or around it", state: "yellow" },
+        {
+          text: "For above is blind belief and under is sword to sleeve",
+          state: "yellow",
+        },
+        {
+          text: "And around is scientific miracle, let's pick above and see",
+          state: "green",
+        },
+        {
+          text: "For if and when we go above, the question still remains",
+          state: "red",
+        },
+        {
+          text: "Are we still in love and is it possible we feel the same?",
+          state: "yellow",
+        },
+        {
+          text: "And that's when going under starts to take my wonder",
+          state: "yellow",
+        },
+        { text: "But until that time, I'll try to sing this", state: "green" },
+        { text: "If I keep moving, they won't know", state: "red" },
+        { text: "I'll morph to someone else", state: "yellow" },
+        { text: "Defense mechanism mode", state: "green" },
+        { text: "I'll morph to someone else", state: "yellow" },
+        { text: "Defense mechanism mode", state: "green" },
+      ].map((e) => ({ ...e, uuid: randomUUID() }) as Node),
     },
     {
       id: 2,
@@ -200,18 +308,27 @@ export default function App() {
       nodes: [
         { text: "Write report", state: "yellow" },
         { text: "Fix bug #42", state: "red" },
-      ],
+      ].map((e) => ({ ...e, uuid: randomUUID() }) as Node),
     },
     {
       id: 3,
       name: "Done",
-      nodes: [{ text: "Submit taxes", state: "green" }],
+      nodes: [{ text: "Submit taxes", state: "green" }].map(
+        (e) => ({ ...e, uuid: randomUUID() }) as Node,
+      ),
     },
   ]);
   return (
     <>
-      <main className="flex flex-col overflow-y-hidden">
-        <StatusBar state={lists[0]} />
+      <main className="flex flex-col fixed overflow-y-hidden">
+        <StatusBar
+          state={lists[0]}
+          setState={(newState) => {
+            setLists(
+              lists.map((list) => (list.id === newState.id ? newState : list)),
+            );
+          }}
+        />
         <ListEditor
           state={lists[0]}
           setState={(newList) => {
