@@ -21,8 +21,8 @@ function StatusBar({ state }: { state: List }) {
   const greenPct = (greenCount / total) * 100;
 
   return (
-    <div className="w-[100vw] p-3">
-      <div className="rounded-b-2xl border-3 overflow-hidden">
+    <div className="w-[100vw] h-[10vh] p-3">
+      <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
         <div className="flex px-3 py-1">
           <h2 className="font-bold border-r-gray-200 mr-auto">{state.name}</h2>
           <h2 className="text-xl text-gray-500 mt-auto">
@@ -83,7 +83,7 @@ function ListEditor({
   };
   return (<div className="flex flex-col w-full">
     <StatusBar state={state} />
-    <motion.ul layout className="h-[98vh] w-[100vw] overflow-y-scroll mt-28 fixed overflow-x-hidden">
+    <motion.ul layout className="h-[90vh] w-[100vw] mb-0 overflow-y-scroll overflow-x-hidden">
       <AnimatePresence>
         {sortedNodes.map((node, ) => {
           const colorClass =
@@ -168,6 +168,7 @@ function ListEditor({
         })}
       </AnimatePresence>
     </motion.ul>
+
   </div>);
 }
 
@@ -212,7 +213,7 @@ export default function App() {
   ]);
   return (
     <>
-      <main className="flex">
+      <main className="flex overflow-y-hidden">
         <ListEditor
           state={lists[0]}
           setState={(newList) => {
