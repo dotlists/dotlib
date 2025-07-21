@@ -12,6 +12,9 @@ import {
 import { ChevronDown, List } from "lucide-react";
 import "react";
 import { Input } from "./components/ui/input";
+import { SignIn } from "./components/auth/SignIn";
+import { useConvexAuth } from "convex/react";
+
 // types
 type Color = "red" | "yellow" | "green";
 type Node = { text: string; state: Color; uuid: string };
@@ -313,6 +316,8 @@ function ListEditor({
 }
 
 export default function App() {
+  const { isAuthenticated } = useConvexAuth();
+
   const [selectedListId, setSelectedListId] = useState<number>(1);
   const [listName, setListName] = useState<string>("");
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
@@ -469,35 +474,39 @@ export default function App() {
 
   return (
     <>
-      <main className="flex flex-col fixed overflow-y-hidden">
-        <StatusBar
-          state={selectedList}
-          setState={(newState) => {
-            setLists(
-              lists.map((list) => (list.id === newState.id ? newState : list)),
-            );
-          }}
-          lists={lists}
-          selectedListId={selectedListId}
-          setSelectedListId={setSelectedListId}
-          listName={listName}
-          setListName={setListName}
-          handleListNameChange={handleListNameChange}
-          handleCreateList={handleCreateList}
-          handleDeleteList={handleDeleteList}
-          handleReorderLists={handleReorderLists}
-          dragOverIdx={dragOverIdx}
-          setDragOverIdx={setDragOverIdx}
-        />
-        <ListEditor
-          state={selectedList}
-          setState={(newList) => {
-            setLists(
-              lists.map((list) => (list.id === newList.id ? newList : list)),
-            );
-          }}
-        />
-      </main>
+      {isAuthenticated ? (
+        <main className="flex flex-col fixed overflow-y-hidden">
+          <StatusBar
+            state={selectedList}
+            setState={(newState) => {
+              setLists(
+                lists.map((list) => (list.id === newState.id ? newState : list)),
+              );
+            }}
+            lists={lists}
+            selectedListId={selectedListId}
+            setSelectedListId={setSelectedListId}
+            listName={listName}
+            setListName={setListName}
+            handleListNameChange={handleListNameChange}
+            handleCreateList={handleCreateList}
+            handleDeleteList={handleDeleteList}
+            handleReorderLists={handleReorderLists}
+            dragOverIdx={dragOverIdx}
+            setDragOverIdx={setDragOverIdx}
+          />
+          <ListEditor
+            state={selectedList}
+            setState={(newList) => {
+              setLists(
+                lists.map((list) => (list.id === newList.id ? newList : list)),
+              );
+            }}
+          />
+        </main>
+      ) : (
+        <SignIn />
+      )}
     </>
   );
 }
