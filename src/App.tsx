@@ -31,7 +31,7 @@ function StatusBar({ state }: { state: List }) {
         </div>
         <div className="flex h-12 w-full">
           <div
-            className="transition-all duration-300"
+            className="transition-all duration-100"
             style={{
               width: `${redPct}%`,
               backgroundColor: redCount > 0 ? '#ef4444' : 'transparent',
@@ -39,7 +39,7 @@ function StatusBar({ state }: { state: List }) {
             }}
           />
           <div
-            className="transition-all duration-300"
+            className="transition-all duration-100"
             style={{
               width: `${yellowPct}%`,
               backgroundColor: yellowCount > 0 ? '#fde047' : 'transparent',
@@ -47,7 +47,7 @@ function StatusBar({ state }: { state: List }) {
             }}
           />
           <div
-            className="transition-all duration-300"
+            className="transition-all duration-100"
             style={{
               width: `${greenPct}%`,
               backgroundColor: greenCount > 0 ? '#4ade80' : 'transparent',
