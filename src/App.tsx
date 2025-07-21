@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { Button } from './components/ui/button'
+import AuthForm from './components/auth/AuthForm';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <p>Count: {count}</p>
-        <Button onClick={() => setCount(count + 1)}>Increment</Button>
-        <Button onClick={() => setCount(count - 1)}>Decrement</Button>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <AuthForm />
       </div>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
