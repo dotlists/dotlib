@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Textarea } from "./components/ui/textarea";
 import { Button } from "./components/ui/button";
 import { v4 as randomUUID } from "uuid";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, List } from "lucide-react";
-import type { text } from "stream/consumers";
+import "react";
 import { Input } from "./components/ui/input";
 // types
 type Color = "red" | "yellow" | "green";
@@ -18,11 +23,32 @@ const stateOrderReversed: Color[] = ["red", "yellow", "green"];
 function StatusBar({
   state,
   setState,
+  lists,
+  selectedListId,
+  setSelectedListId,
+  listName,
+  setListName,
+  handleListNameChange,
+  handleCreateList,
+  handleDeleteList,
+  handleReorderLists,
+  dragOverIdx,
+  setDragOverIdx,
 }: {
   state: List;
   setState: (_: List) => void;
+  lists: List[];
+  selectedListId: number;
+  setSelectedListId: (id: number) => void;
+  listName: string;
+  setListName: (name: string) => void;
+  handleListNameChange: (name: string) => void;
+  handleCreateList: () => void;
+  handleDeleteList: () => void;
+  handleReorderLists: (fromIdx: number, toIdx: number) => void;
+  dragOverIdx: number | null;
+  setDragOverIdx: (idx: number | null) => void;
 }) {
-
   const addNode = useCallback(() => {
     // clear any currently empty nodes
     const newNodes = state.nodes.filter((n) => n.text.trim() !== "");
@@ -55,9 +81,7 @@ function StatusBar({
   const yellowPct = (yellowCount / total) * 100;
   const greenPct = (greenCount / total) * 100;
 
-
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
-
 
   return (
     <div className="w-[100vw] h-[10vh] p-3">
@@ -67,8 +91,8 @@ function StatusBar({
             id="list-name-input"
             className="font-lora w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
             value={listName}
-            onChange={e => setListName(e.target.value)}
-            onBlur={e => handleListNameChange(e.target.value)}
+            onChange={(e) => setListName(e.target.value)}
+            onBlur={(e) => handleListNameChange(e.target.value)}
             style={{
               fontFamily: "'Lora', serif",
               fontWeight: 500,
@@ -77,35 +101,25 @@ function StatusBar({
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                tabIndex={-1}
-              >
+              <Button variant="ghost" className="!ring-none !border-none !outline-none" size="icon" tabIndex={-1}>
                 <ChevronDown className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-white p-3 rounded-lg">
               {lists.map((list, idx) => (
                 <DropdownMenuItem
                   key={list.id}
                   onClick={() => setSelectedListId(list.id)}
-                  className={
-                    (selectedListId === list.id ? 'font-bold ' : '') +
-                    (dragOverIdx === idx && draggedIdx !== null && draggedIdx !== idx
-                      ? ' bg-accent'
-                      : '')
-                  }
                   draggable
-                  onDragStart={e => {
+                  onDragStart={(e) => {
                     setDraggedIdx(idx);
-                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.effectAllowed = "move";
                   }}
-                  onDragOver={e => {
+                  onDragOver={(e) => {
                     e.preventDefault();
                     setDragOverIdx(idx);
                   }}
-                  onDrop={e => {
+                  onDrop={(e) => {
                     e.preventDefault();
                     if (draggedIdx !== null && draggedIdx !== idx) {
                       handleReorderLists(draggedIdx, idx);
@@ -117,14 +131,21 @@ function StatusBar({
                     setDraggedIdx(null);
                     setDragOverIdx(null);
                   }}
-                  style={{
-                    cursor: 'grab',
-                    opacity: draggedIdx === idx ? 0.5 : 1,
-                    userSelect: 'none',
-                  }}
+                  className={`cursor-grab select-none ${draggedIdx === idx ? "opacity-50" : "opacity-100"} ${selectedListId === list.id ? "font-bold " : ""} ${
+                    dragOverIdx === idx &&
+                    draggedIdx !== null &&
+                    draggedIdx !== idx
+                      ? " bg-accent"
+                      : ""
+                  }`}
                 >
-                  {list.name || <span className="italic text-muted-foreground">Untitled</span>}
-                  <span style={{marginLeft: "auto", opacity: 0.3, fontSize: 12, cursor: 'grab'}}>⠿</span>
+                  <span className="mr-auto">
+                    {list.name || (
+                      <span className="italic text-muted-foreground">
+                        Untitled
+                      </span>
+                    )}
+                  </span>
                 </DropdownMenuItem>
               ))}
               <DropdownMenuItem onClick={handleCreateList}>
@@ -195,9 +216,7 @@ function ListEditor({
     setState({ ...state, nodes: newNodes });
   };
   return (
-    <motion.ul
-      className="h-[90vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden"
-    >
+    <motion.ul className="h-[90vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden">
       <AnimatePresence>
         {sortedNodes.map((node) => {
           const colorClass =
@@ -294,6 +313,9 @@ function ListEditor({
 }
 
 export default function App() {
+  const [selectedListId, setSelectedListId] = useState<number>(1);
+  const [listName, setListName] = useState<string>("");
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const [lists, setLists] = useState<List[]>([
     {
       id: 1,
@@ -398,19 +420,77 @@ export default function App() {
       ),
     },
   ]);
+
+  const selectedList =
+    lists.find((list) => list.id === selectedListId) || lists[0];
+
+  const handleListNameChange = (name: string) => {
+    setLists(
+      lists.map((list) =>
+        list.id === selectedListId ? { ...list, name } : list,
+      ),
+    );
+  };
+
+  const handleCreateList = () => {
+    const newId = Math.max(...lists.map((l) => l.id)) + 1;
+    const newList: List = {
+      id: newId,
+      name: "New List",
+      nodes: [],
+    };
+    setLists([...lists, newList]);
+    setSelectedListId(newId);
+    setListName("New List");
+  };
+
+  const handleDeleteList = () => {
+    if (lists.length <= 1) return;
+    const filteredLists = lists.filter((list) => list.id !== selectedListId);
+    setLists(filteredLists);
+    setSelectedListId(filteredLists[0].id);
+    setListName(filteredLists[0].name);
+  };
+
+  const handleReorderLists = (fromIdx: number, toIdx: number) => {
+    const newLists = [...lists];
+    const [movedList] = newLists.splice(fromIdx, 1);
+    newLists.splice(toIdx, 0, movedList);
+    setLists(newLists);
+  };
+
+  // Update listName when selectedListId changes
+  React.useEffect(() => {
+    const selected = lists.find((list) => list.id === selectedListId);
+    if (selected) {
+      setListName(selected.name);
+    }
+  }, [selectedListId, lists]);
+
   return (
     <>
       <main className="flex flex-col fixed overflow-y-hidden">
         <StatusBar
-          state={lists[0]}
+          state={selectedList}
           setState={(newState) => {
             setLists(
               lists.map((list) => (list.id === newState.id ? newState : list)),
             );
           }}
+          lists={lists}
+          selectedListId={selectedListId}
+          setSelectedListId={setSelectedListId}
+          listName={listName}
+          setListName={setListName}
+          handleListNameChange={handleListNameChange}
+          handleCreateList={handleCreateList}
+          handleDeleteList={handleDeleteList}
+          handleReorderLists={handleReorderLists}
+          dragOverIdx={dragOverIdx}
+          setDragOverIdx={setDragOverIdx}
         />
         <ListEditor
-          state={lists[0]}
+          state={selectedList}
           setState={(newList) => {
             setLists(
               lists.map((list) => (list.id === newList.id ? newList : list)),
