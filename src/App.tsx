@@ -3,6 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Textarea } from "./components/ui/textarea";
 import { Button } from "./components/ui/button";
 import { v4 as randomUUID } from "uuid";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
+import { ChevronDown, List } from "lucide-react";
+import type { text } from "stream/consumers";
+import { Input } from "./components/ui/input";
 // types
 type Color = "red" | "yellow" | "green";
 type Node = { text: string; state: Color; uuid: string };
@@ -18,6 +22,7 @@ function StatusBar({
   state: List;
   setState: (_: List) => void;
 }) {
+
   const addNode = useCallback(() => {
     // clear any currently empty nodes
     const newNodes = state.nodes.filter((n) => n.text.trim() !== "");
@@ -50,14 +55,89 @@ function StatusBar({
   const yellowPct = (yellowCount / total) * 100;
   const greenPct = (greenCount / total) * 100;
 
+
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
+
   return (
     <div className="w-[100vw] h-[10vh] p-3">
       <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
         <div className="flex px-3 py-1">
-          <h2 className="font-bold mr-10">{state.name}</h2>
-          <h2 className="text-xl text-gray-500 mt-auto">
-            {nodes.length} items
-          </h2>
+          <Input
+            id="list-name-input"
+            className="font-lora w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            value={listName}
+            onChange={e => setListName(e.target.value)}
+            onBlur={e => handleListNameChange(e.target.value)}
+            style={{
+              fontFamily: "'Lora', serif",
+              fontWeight: 500,
+            }}
+            autoComplete="off"
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                tabIndex={-1}
+              >
+                <ChevronDown className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {lists.map((list, idx) => (
+                <DropdownMenuItem
+                  key={list.id}
+                  onClick={() => setSelectedListId(list.id)}
+                  className={
+                    (selectedListId === list.id ? 'font-bold ' : '') +
+                    (dragOverIdx === idx && draggedIdx !== null && draggedIdx !== idx
+                      ? ' bg-accent'
+                      : '')
+                  }
+                  draggable
+                  onDragStart={e => {
+                    setDraggedIdx(idx);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    setDragOverIdx(idx);
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (draggedIdx !== null && draggedIdx !== idx) {
+                      handleReorderLists(draggedIdx, idx);
+                    }
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  style={{
+                    cursor: 'grab',
+                    opacity: draggedIdx === idx ? 0.5 : 1,
+                    userSelect: 'none',
+                  }}
+                >
+                  {list.name || <span className="italic text-muted-foreground">Untitled</span>}
+                  <span style={{marginLeft: "auto", opacity: 0.3, fontSize: 12, cursor: 'grab'}}>⠿</span>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem onClick={handleCreateList}>
+                + create new list
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDeleteList}
+                className="text-red-500"
+              >
+                delete current list
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="secondary" className="ml-auto" onClick={addNode}>
             Add item
           </Button>
