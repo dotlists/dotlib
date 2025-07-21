@@ -81,11 +81,10 @@ function ListEditor({
     newNodes.splice(index, 1);
     setState({ ...state, nodes: newNodes });
   };
-  return (<div className="flex flex-col w-full">
-    <StatusBar state={state} />
-    <motion.ul layout className="h-[90vh] w-[100vw] mb-0 overflow-y-scroll overflow-x-hidden">
+  return (
+    <motion.ul layout className="h-[90vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden">
       <AnimatePresence>
-        {sortedNodes.map((node, ) => {
+        {sortedNodes.map(node => {
           const colorClass =
             node.state === "red"
               ? "bg-red-500"
@@ -99,7 +98,7 @@ function ListEditor({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="flex hover:bg-gray-100 w-full rounded-xl my-4 py-2"
+              className="flex hover:bg-gray-100 rounded-xl my-2 py-2"
               key={index}
             >
               <div
@@ -118,7 +117,7 @@ function ListEditor({
                     state: stateOrderReversed[newState],
                   });
                 }}
-                className={`w-10 min-h-[100%] mx-5 rounded-full hover:blur-xs transition-all duration-100 ${colorClass}`}
+                className={`w-10 min-h-[100%] mr-5 rounded-full hover:blur-xs transition-all duration-100 ${colorClass}`}
               ></div>
               <Textarea
                 id={`item-${index}`}
@@ -167,9 +166,7 @@ function ListEditor({
           );
         })}
       </AnimatePresence>
-    </motion.ul>
-
-  </div>);
+    </motion.ul>);
 }
 
 export default function App() {
@@ -213,7 +210,8 @@ export default function App() {
   ]);
   return (
     <>
-      <main className="flex overflow-y-hidden">
+      <main className="flex flex-col overflow-y-hidden">
+        <StatusBar state={lists[0]} />
         <ListEditor
           state={lists[0]}
           setState={(newList) => {
