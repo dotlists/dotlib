@@ -8,6 +8,57 @@ type List = { id: number; name: string; nodes: Node[] };
 
 const stateOrder = { red: 0, yellow: 1, green: 2 };
 const stateOrderReversed: Color[] = ["red", "yellow", "green"];
+
+
+function StatusBar({ state }: { state: List }) {
+  const nodes = state.nodes;
+  const total = nodes.length || 1;
+  const redCount = nodes.filter(n => n.state === 'red').length;
+  const yellowCount = nodes.filter(n => n.state === 'yellow').length;
+  const greenCount = nodes.filter(n => n.state === 'green').length;
+  const redPct = (redCount / total) * 100;
+  const yellowPct = (yellowCount / total) * 100;
+  const greenPct = (greenCount / total) * 100;
+
+  return (
+    <div className="w-[100vw] p-3">
+      <div className="rounded-b-2xl border-3 overflow-hidden">
+        <div className="flex px-3 py-1">
+          <h2 className="font-bold border-r-gray-200 mr-auto">{state.name}</h2>
+          <h2 className="text-xl text-gray-500 mt-auto">
+            {nodes.length} items
+          </h2>
+        </div>
+        <div className="flex h-12 w-full">
+          <div
+            className="transition-all duration-300"
+            style={{
+              width: `${redPct}%`,
+              backgroundColor: redCount > 0 ? '#ef4444' : 'transparent',
+              transition: 'width 0.3s'
+            }}
+          />
+          <div
+            className="transition-all duration-300"
+            style={{
+              width: `${yellowPct}%`,
+              backgroundColor: yellowCount > 0 ? '#fde047' : 'transparent',
+              transition: 'width 0.3s'
+            }}
+          />
+          <div
+            className="transition-all duration-300"
+            style={{
+              width: `${greenPct}%`,
+              backgroundColor: greenCount > 0 ? '#4ade80' : 'transparent',
+              transition: 'width 0.3s'
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 function ListEditor({
   state,
   setState,
@@ -30,8 +81,9 @@ function ListEditor({
     newNodes.splice(index, 1);
     setState({ ...state, nodes: newNodes });
   };
-  return (
-    <motion.ul layout>
+  return (<div className="flex flex-col w-full">
+    <StatusBar state={state} />
+    <motion.ul layout className="h-[98vh] w-[100vw] overflow-y-scroll mt-28 fixed overflow-x-hidden">
       <AnimatePresence>
         {sortedNodes.map((node, ) => {
           const colorClass =
@@ -47,7 +99,7 @@ function ListEditor({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="flex hover:bg-gray-100 w-full rounded-xl my-6"
+              className="flex hover:bg-gray-100 w-full rounded-xl my-4 py-2"
               key={index}
             >
               <div
@@ -75,7 +127,7 @@ function ListEditor({
                   const newNode = { ...node, text: e.target.value };
                   setNode(index, newNode);
                 }}
-                className="text-2xl focus:outline-none w-full focus:ring-none"
+                className="text-xl focus:outline-none w-full focus:ring-none"
                 style={{ resize: "none", overflowY: "auto"}}
                 rows={1}
                 ref={(el) => {
@@ -116,7 +168,7 @@ function ListEditor({
         })}
       </AnimatePresence>
     </motion.ul>
-  );
+  </div>);
 }
 
 export default function App() {

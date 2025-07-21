@@ -178,7 +178,7 @@
     @apply bg-background text-foreground;
   }
   h1 {
-    @apply text-5xl font-serif @xs:text-8xl;
+    @apply text-6xl font-serif @xs:text-8xl;
     line-height: 3.2rem;
   }
   h2 {
