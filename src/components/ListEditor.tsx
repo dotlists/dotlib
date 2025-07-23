@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import type { Id } from "#convex/_generated/dataModel";
+import type { Id } from "@/lib/convex";
 
 interface ListEditorProps {
   state: {
