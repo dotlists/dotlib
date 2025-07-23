@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
@@ -20,7 +20,8 @@ type ConvexList = {
 };
 
 export default function AuthenticatedApp() {
-  const rawLists = useQuery(api.lists.getLists) || [];
+  const rawLists = useQuery(api.lists.getLists);
+
   const createList = useMutation(api.lists.createList);
   const updateList = useMutation(api.lists.updateList);
   const deleteList = useMutation(api.lists.deleteList);
@@ -28,14 +29,20 @@ export default function AuthenticatedApp() {
   const updateItem = useMutation(api.lists.updateItem);
   const deleteItem = useMutation(api.lists.deleteItem);
 
-  // Cast raw lists to typed lists
-  const lists = rawLists.map((list: any) => ({
-    ...list,
-    nodes: list.nodes.map((node: any) => ({
-      ...node,
-      state: node.state as "red" | "yellow" | "green",
-    })),
-  })) as ConvexList[];
+  const lists: ConvexList[] = useMemo(
+    () =>
+      rawLists?.map((list) => ({
+        ...list,
+        id: list._id,
+        nodes:
+          list.nodes?.map((node) => ({
+            ...node,
+            uuid: node._id,
+            state: node.state as "red" | "yellow" | "green",
+          })) ?? [],
+      })) ?? [],
+    [rawLists],
+  );
 
   const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
     null,
@@ -43,15 +50,21 @@ export default function AuthenticatedApp() {
   const [listName, setListName] = useState<string>("");
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  const selectedList =
-    lists.find((list: ConvexList) => list.id === selectedListId) || lists[0];
+  const selectedList = lists.find(
+    (list: ConvexList) => list.id === selectedListId,
+  );
 
   useEffect(() => {
-    console.log('useEffect triggered. lists:', lists, 'selectedListId:', selectedListId);
-    if (lists.length > 0 && !selectedListId) {
-      setSelectedListId(lists[0].id);
-      setListName(lists[0].name);
-      console.log('Selected first list:', lists[0].id, lists[0].name);
+    if (lists.length === 0) {
+      if (selectedListId !== null) {
+        setSelectedListId(null);
+        setListName("");
+      }
+    } else {
+      if (!selectedListId || !lists.some((list) => list.id === selectedListId)) {
+        setSelectedListId(lists[0].id);
+        setListName(lists[0].name);
+      }
     }
   }, [lists, selectedListId]);
 
@@ -103,7 +116,7 @@ export default function AuthenticatedApp() {
     await deleteItem({ id });
   };
 
-  const handleReorderLists = async (_fromIdx: number, _toIdx: number) => {
+  const handleReorderLists = async () => {
     // Note: List reordering will be implemented later with a separate order field
   };
 
@@ -131,14 +144,16 @@ export default function AuthenticatedApp() {
         dragOverIdx={dragOverIdx}
         setDragOverIdx={setDragOverIdx}
       />
-      {selectedList && (
-        <ListEditor
-          state={selectedList}
-          handleUpdateItem={handleUpdateItem}
-          handleAddItem={handleAddItem}
-          handleDeleteItem={handleDeleteItem}
-        />
-      )}
+      <div className="mt-4">
+        {selectedList && (
+          <ListEditor
+            state={selectedList}
+            handleUpdateItem={handleUpdateItem}
+            handleAddItem={handleAddItem}
+            handleDeleteItem={handleDeleteItem}
+          />
+        )}
+      </div>
     </main>
   );
 }
