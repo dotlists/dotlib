@@ -37,7 +37,7 @@ export function ListEditor({
   });
 
   return (
-    <motion.ul className="h-[90vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden">
+    <motion.ul className="h-[85vh] w-[100vw] pr-3 mb-0 overflow-y-scroll overflow-x-hidden">
       <AnimatePresence>
         {sortedNodes.map((node) => {
           const colorClass =

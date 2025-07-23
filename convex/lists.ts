@@ -1,22 +1,21 @@
 // convex/lists.ts
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 //
 // FETCH ALL LISTS FOR A USER
 //
 export const getLists = query({
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    console.log("getLists tokenIdentifier:", identity.tokenIdentifier);
-    const userId = identity.tokenIdentifier;
 
     const lists = await ctx.db
       .query("lists")
-    //  .withIndex("by_user", (q) => q.eq("userId", userId))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     const listsWithItems = await Promise.all(
@@ -60,12 +59,10 @@ export const getItems = query({
 export const createList = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    console.log("createList tokenIdentifier:", identity.tokenIdentifier);
-    const userId = identity.tokenIdentifier;
 
     return await ctx.db.insert("lists", {
       name: args.name,
@@ -83,11 +80,10 @@ export const createList = mutation({
 export const updateList = mutation({
   args: { id: v.id("lists"), name: v.string() },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    const userId = identity.tokenIdentifier;
 
     const list = await ctx.db.get(args.id);
     if (!list || list.userId !== userId) {
@@ -107,11 +103,10 @@ export const updateList = mutation({
 export const deleteList = mutation({
   args: { id: v.id("lists") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    const userId = identity.tokenIdentifier;
 
     const list = await ctx.db.get(args.id);
     if (!list || list.userId !== userId) {
@@ -142,17 +137,13 @@ export const createItem = mutation({
     state: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    const userId = identity.tokenIdentifier;
-    console.log("createItem: userId from identity", userId);
 
     const list = await ctx.db.get(args.listId);
-    console.log("createItem: list from db", list);
     if (!list || list.userId !== userId) {
-      console.error("createItem: Unauthorized - list not found or userId mismatch", { list, userId });
       throw new Error("Unauthorized");
     }
 
@@ -174,11 +165,10 @@ export const updateItem = mutation({
     state: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    const userId = identity.tokenIdentifier;
 
     const item = await ctx.db.get(args.id);
     if (!item || item.userId !== userId) {
@@ -196,11 +186,10 @@ export const updateItem = mutation({
 export const deleteItem = mutation({
   args: { id: v.id("items") },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
       throw new Error("Unauthorized");
     }
-    const userId = identity.tokenIdentifier;
 
     const item = await ctx.db.get(args.id);
     if (!item || item.userId !== userId) {

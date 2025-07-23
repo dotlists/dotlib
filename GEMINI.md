@@ -22,4 +22,4 @@ This document outlines the conventions for agentic coding in this repository.
 
 - **Conventional Commits:** All commits must follow the Conventional Commits specification.
 - **Commit Messages:** Commit messages should be informed by past commit messages.
-- **Branching:** Create a new branch for each new feature or fix.
+- **Branching:** Create a new branch for each new feature or fix, unless its small, ex: favicon change, formatting changes

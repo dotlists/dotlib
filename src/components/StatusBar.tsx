@@ -1,4 +1,5 @@
 
+import * as React from "react";
 import type { Id } from "#convex/_generated/dataModel";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -43,9 +44,6 @@ export function StatusBar({
   handleListNameChange,
   handleCreateList,
   handleDeleteList,
-  handleReorderLists,
-  dragOverIdx,
-  setDragOverIdx,
 }: StatusBarProps) {
   const { signOut } = useAuthActions();
   const selectedList = lists.find((list) => list.id === selectedListId);
@@ -102,30 +100,29 @@ export function StatusBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white p-3 rounded-lg">
-              {lists.map((list, idx) => {
-                } else {
-                  itemKey = `list-fallback-${idx}`;
-                }
-                return (
-                  <React.Fragment key={itemKey}>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setSelectedListId(list.id);
-                      }}
-                      className={`cursor-grab select-none ${selectedListId === list.id ? "font-bold " : ""}`}
-                    >
-                      <span className="mr-auto">
-                        {list.name || (
-                          <span className="italic text-muted-foreground">
-                            Untitled
-                          </span>
-                        )}
+              {lists.map((list) => (
+                <DropdownMenuItem
+                  key={list.id}
+                  onClick={() => {
+                    setSelectedListId(list.id);
+                  }}
+                  className={`cursor-grab select-none ${
+                    selectedListId === list.id ? "font-bold " : ""
+                  }`}
+                >
+                  <span className="mr-auto">
+                    {list.name || (
+                      <span className="italic text-muted-foreground">
+                        Untitled
                       </span>
-                    </DropdownMenuItem>
-                  </React.Fragment>
-                );
-              })}
-              <DropdownMenuItem key="create-new-list" onClick={handleCreateList}>
+                    )}
+                  </span>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuItem
+                key="create-new-list"
+                onClick={handleCreateList}
+              >
                 + create new list
               </DropdownMenuItem>
               <DropdownMenuItem
