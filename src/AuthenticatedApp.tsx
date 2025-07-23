@@ -3,8 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
 
-import { api } from "#convex/_generated/api";
-import type { Id } from "#convex/_generated/dataModel";
+import { api, type Id } from "@/lib/convex";
 import { Button } from "./components/ui/button";
 
 type ConvexItem = {

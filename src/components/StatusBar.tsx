@@ -1,6 +1,5 @@
 
-import * as React from "react";
-import type { Id } from "#convex/_generated/dataModel";
+import type { Id } from "@/lib/convex";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {

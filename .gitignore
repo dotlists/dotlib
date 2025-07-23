@@ -3,9 +3,9 @@ logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+erorrs.md
 
 node_modules
 dist
@@ -26,3 +26,4 @@ dist-ssr
 server.mdx
 react.mdx
 nextjs.mdx
+errors.md
