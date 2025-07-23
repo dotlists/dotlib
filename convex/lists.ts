@@ -1,77 +1,84 @@
+// convex/lists.ts
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+//
+// FETCH ALL LISTS FOR A USER
+//
 export const getLists = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthorized");
     }
-
+    console.log("getLists tokenIdentifier:", identity.tokenIdentifier);
     const lists = await ctx.db
       .query("lists")
-      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      //.withIndex("by_user", (q) => q.eq("userId", identity.tokenIdentifier))
       .collect();
 
-    // For each list, get its items
-    const listsWithItems = await Promise.all(
-      lists.map(async (list) => {
-        const items = await ctx.db
-          .query("items")
-          .withIndex("by_list", (q) => q.eq("listId", list._id))
-          .collect();
-
-        return {
-          id: list._id,
-          name: list.name,
-          nodes: items.map((item) => ({
-            uuid: item._id,
-            text: item.text,
-            state: item.state,
-          })),
-        };
-      }),
-    );
-
-    return listsWithItems.sort((a, b) => a.name.localeCompare(b.name));
+    return lists.sort((a, b) => a.name.localeCompare(b.name));
   },
 });
 
-export const createList = mutation({
+export const getItems = query({
   args: {
-    name: v.string(),
+    listId: v.id("lists"),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthorized");
     }
+    const items = await ctx.db
+      .query("items")
+      .filter((q) => q.eq(q.field("listId"), args.listId))
+      .collect();
+    return items.map((item) => ({
+      uuid: item._id,
+      text: item.text,
+      state: item.state,
+    }));
+  },
+});
 
-    const list = await ctx.db.insert("lists", {
+//
+// CREATE A NEW LIST
+//
+export const createList = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+    console.log("createList tokenIdentifier:", identity.tokenIdentifier);
+    const userId = identity.tokenIdentifier;
+
+    return await ctx.db.insert("lists", {
       name: args.name,
-      userId: identity.subject,
+      userId,
       order: 0,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
-
-    return list;
   },
 });
 
+//
+// RENAME A LIST
+//
 export const updateList = mutation({
-  args: {
-    id: v.id("lists"),
-    name: v.string(),
-  },
+  args: { id: v.id("lists"), name: v.string() },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthorized");
     }
+    const userId = identity.tokenIdentifier;
 
     const list = await ctx.db.get(args.id);
-    if (!list || list.userId !== identity.subject) {
+    if (!list || list.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -82,36 +89,40 @@ export const updateList = mutation({
   },
 });
 
+//
+// DELETE A LIST + ITS ITEMS
+//
 export const deleteList = mutation({
-  args: {
-    id: v.id("lists"),
-  },
+  args: { id: v.id("lists") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthorized");
     }
+    const userId = identity.tokenIdentifier;
 
     const list = await ctx.db.get(args.id);
-    if (!list || list.userId !== identity.subject) {
+    if (!list || list.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    // Delete all items in the list
+    // remove items first
     const items = await ctx.db
       .query("items")
       .withIndex("by_list", (q) => q.eq("listId", args.id))
       .collect();
-
     for (const item of items) {
       await ctx.db.delete(item._id);
     }
 
-    // Delete the list
+    // then the list
     await ctx.db.delete(args.id);
   },
 });
 
+//
+// CRUD FOR ITEMS
+//
 export const createItem = mutation({
   args: {
     listId: v.id("lists"),
@@ -123,22 +134,21 @@ export const createItem = mutation({
     if (!identity) {
       throw new Error("Unauthorized");
     }
+    const userId = identity.tokenIdentifier;
 
     const list = await ctx.db.get(args.listId);
-    if (!list || list.userId !== identity.subject) {
+    if (!list || list.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
-    const item = await ctx.db.insert("items", {
+    return await ctx.db.insert("items", {
       listId: args.listId,
       text: args.text,
       state: args.state,
-      userId: identity.subject,
+      userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
-
-    return item;
   },
 });
 
@@ -153,9 +163,10 @@ export const updateItem = mutation({
     if (!identity) {
       throw new Error("Unauthorized");
     }
+    const userId = identity.tokenIdentifier;
 
     const item = await ctx.db.get(args.id);
-    if (!item || item.userId !== identity.subject) {
+    if (!item || item.userId !== userId) {
       throw new Error("Unauthorized");
     }
 
@@ -168,20 +179,18 @@ export const updateItem = mutation({
 });
 
 export const deleteItem = mutation({
-  args: {
-    id: v.id("items"),
-  },
+  args: { id: v.id("items") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Unauthorized");
     }
+    const userId = identity.tokenIdentifier;
 
     const item = await ctx.db.get(args.id);
-    if (!item || item.userId !== identity.subject) {
+    if (!item || item.userId !== userId) {
       throw new Error("Unauthorized");
     }
-
     await ctx.db.delete(args.id);
   },
 });
