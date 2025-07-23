@@ -59,24 +59,30 @@ export function ListEditor({
             >
               <div
                 onClick={() => {
-                  const newState = (stateOrder[node.state] + 1) % 3;
-                  handleUpdateItem(node.uuid, {
-                    state: stateOrderReversed[newState],
-                  });
+                  if (node.uuid) {
+                    const newState = (stateOrder[node.state] + 1) % 3;
+                    handleUpdateItem(node.uuid, {
+                      state: stateOrderReversed[newState],
+                    });
+                  }
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault();
-                  const newState = (stateOrder[node.state] + 2) % 3;
-                  handleUpdateItem(node.uuid, {
-                    state: stateOrderReversed[newState],
-                  });
+                  if (node.uuid) {
+                    const newState = (stateOrder[node.state] + 2) % 3;
+                    handleUpdateItem(node.uuid, {
+                      state: stateOrderReversed[newState],
+                    });
+                  }
                 }}
                 className={`w-10 min-h-[100%] mr-5 rounded-full hover:blur-xs transition-all duration-100 ${colorClass}`}
               ></div>
               <Textarea
                 value={node.text}
                 onChange={(e) => {
-                  handleUpdateItem(node.uuid, { text: e.target.value });
+                  if (node.uuid) {
+                    handleUpdateItem(node.uuid, { text: e.target.value });
+                  }
                 }}
                 className="text-xl focus:outline-none w-full focus:ring-none"
                 style={{ resize: "none", overflowY: "auto" }}
@@ -88,21 +94,29 @@ export function ListEditor({
                 }}
                 onBlur={(e) => {
                   const trimmed = e.currentTarget.value.trim();
-                  if (trimmed === "") {
-                    handleDeleteItem(node.uuid);
-                  } else if (trimmed !== node.text) {
-                    handleUpdateItem(node.uuid, { text: trimmed });
+                  if (node.uuid) {
+                    if (trimmed === "") {
+                      handleDeleteItem(node.uuid);
+                    } else if (trimmed !== node.text) {
+                      handleUpdateItem(node.uuid, { text: trimmed });
+                    }
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Backspace" && node.text === "") {
-                    e.preventDefault();
-                    handleDeleteItem(node.uuid);
+                  if (node.uuid) {
+                    if (e.key === "Backspace" && node.text === "") {
+                      e.preventDefault();
+                      handleDeleteItem(node.uuid);
+                    }
                   }
                 }}
               />
               <Button
-                onClick={() => handleDeleteItem(node.uuid)}
+                onClick={() => {
+                  if (node.uuid) {
+                    handleDeleteItem(node.uuid);
+                  }
+                }}
                 variant="destructive"
                 className="h-7 rounded-full cursor-pointer mr-3"
               >

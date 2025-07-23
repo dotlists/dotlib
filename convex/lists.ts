@@ -12,12 +12,24 @@ export const getLists = query({
       throw new Error("Unauthorized");
     }
     console.log("getLists tokenIdentifier:", identity.tokenIdentifier);
+    const userId = identity.tokenIdentifier;
+
     const lists = await ctx.db
       .query("lists")
-      //.withIndex("by_user", (q) => q.eq("userId", identity.tokenIdentifier))
+    //  .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
-    return lists.sort((a, b) => a.name.localeCompare(b.name));
+    const listsWithItems = await Promise.all(
+      lists.map(async (list) => {
+        const items = await ctx.db
+          .query("items")
+          .withIndex("by_list", (q) => q.eq("listId", list._id))
+          .collect();
+        return { ...list, nodes: items };
+      }),
+    );
+
+    return listsWithItems.sort((a, b) => a.name.localeCompare(b.name));
   },
 });
 
@@ -135,9 +147,12 @@ export const createItem = mutation({
       throw new Error("Unauthorized");
     }
     const userId = identity.tokenIdentifier;
+    console.log("createItem: userId from identity", userId);
 
     const list = await ctx.db.get(args.listId);
+    console.log("createItem: list from db", list);
     if (!list || list.userId !== userId) {
+      console.error("createItem: Unauthorized - list not found or userId mismatch", { list, userId });
       throw new Error("Unauthorized");
     }
 

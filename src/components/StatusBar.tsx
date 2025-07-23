@@ -1,3 +1,4 @@
+
 import type { Id } from "#convex/_generated/dataModel";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -7,6 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
+
 import { ChevronDown } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
@@ -100,51 +102,40 @@ export function StatusBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white p-3 rounded-lg">
-              {lists.map((list, idx) => (
-                <DropdownMenuItem
-                  key={list.id}
-                  onClick={() => setSelectedListId(list.id)}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.effectAllowed = "move";
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverIdx(idx);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    if (dragOverIdx !== null && dragOverIdx !== idx) {
-                      handleReorderLists(dragOverIdx, idx);
-                    }
-                    setDragOverIdx(null);
-                  }}
-                  onDragEnd={() => {
-                    setDragOverIdx(null);
-                  }}
-                  className={`cursor-grab select-none ${dragOverIdx === idx ? "opacity-50" : "opacity-100"} ${
-                    selectedListId === list.id ? "font-bold " : ""
-                  } ${dragOverIdx === idx ? " bg-accent" : ""}`}
-                >
-                  <span className="mr-auto">
-                    {list.name || (
-                      <span className="italic text-muted-foreground">
-                        Untitled
+              {lists.map((list, idx) => {
+                } else {
+                  itemKey = `list-fallback-${idx}`;
+                }
+                return (
+                  <React.Fragment key={itemKey}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setSelectedListId(list.id);
+                      }}
+                      className={`cursor-grab select-none ${selectedListId === list.id ? "font-bold " : ""}`}
+                    >
+                      <span className="mr-auto">
+                        {list.name || (
+                          <span className="italic text-muted-foreground">
+                            Untitled
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuItem onClick={handleCreateList}>
+                    </DropdownMenuItem>
+                  </React.Fragment>
+                );
+              })}
+              <DropdownMenuItem key="create-new-list" onClick={handleCreateList}>
                 + create new list
               </DropdownMenuItem>
               <DropdownMenuItem
+                key="delete-current-list"
                 onClick={handleDeleteList}
                 className="text-red-500"
               >
                 delete current list
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={signOut}>
+              <DropdownMenuItem key="log-out" onClick={signOut}>
                 log out
               </DropdownMenuItem>
             </DropdownMenuContent>

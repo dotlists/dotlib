@@ -20,7 +20,8 @@ type ConvexList = {
 };
 
 export default function AuthenticatedApp() {
-  const rawLists = useQuery(api.lists.getLists) || [];
+  const rawLists = useQuery(api.lists.getLists);
+
   const createList = useMutation(api.lists.createList);
   const updateList = useMutation(api.lists.updateList);
   const deleteList = useMutation(api.lists.deleteList);
@@ -28,14 +29,22 @@ export default function AuthenticatedApp() {
   const updateItem = useMutation(api.lists.updateItem);
   const deleteItem = useMutation(api.lists.deleteItem);
 
-  // Cast raw lists to typed lists
-  const lists = rawLists.map((list: any) => ({
-    ...list,
-    nodes: list.nodes.map((node: any) => ({
-      ...node,
-      state: node.state as "red" | "yellow" | "green",
-    })),
-  })) as ConvexList[];
+  const lists: ConvexList[] = (rawLists === undefined || rawLists === null || !Array.isArray(rawLists))
+    ? []
+    : rawLists
+        .filter(Boolean) // Ensure each list is not null or undefined
+        .map((list: any) => {
+          const mappedList = {
+            id: list._id ? list._id.toString() : `invalid-id-${idx}`, // Ensure id is always a string, with fallback
+            ...list, // Spread original list first
+            nodes: (list && Array.isArray(list.nodes)) ? list.nodes.map((node: any) => ({
+              ...node,
+              state: node.state as "red" | "yellow" | "green",
+            })) : [], // Ensure nodes is always an array and its items are mapped
+          };
+          console.log('AuthenticatedApp: mapped list for StatusBar', mappedList, 'original _id:', list._id, 'mapped id:', mappedList.id);
+          return mappedList;
+        });
 
   const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
     null,
@@ -43,15 +52,20 @@ export default function AuthenticatedApp() {
   const [listName, setListName] = useState<string>("");
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  const selectedList =
-    lists.find((list: ConvexList) => list.id === selectedListId) || lists[0];
+  const selectedList = lists.find((list: ConvexList) => list.id === selectedListId);
 
   useEffect(() => {
-    console.log('useEffect triggered. lists:', lists, 'selectedListId:', selectedListId);
-    if (lists.length > 0 && !selectedListId) {
-      setSelectedListId(lists[0].id);
-      setListName(lists[0].name);
-      console.log('Selected first list:', lists[0].id, lists[0].name);
+    console.log('AuthenticatedApp useEffect: lists', lists, 'selectedListId', selectedListId);
+    if (lists.length === 0) {
+      if (selectedListId !== null) {
+        setSelectedListId(null);
+        setListName("");
+      }
+    } else {
+      if (!selectedListId || !lists.some(list => list.id === selectedListId)) {
+        setSelectedListId(lists[0].id);
+        setListName(lists[0].name);
+      }
     }
   }, [lists, selectedListId]);
 
