@@ -137,7 +137,7 @@ export default function AuthenticatedApp() {
   return (
     <main className="flex">
       <div className="w-1/4 p-4 border-r h-screen overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Personal Lists</h2>
+        <h2 className="text-xl font-bold mb-4 font-heading">Personal Lists</h2>
         <ul>
           {personalLists.map((list) => (
             <li

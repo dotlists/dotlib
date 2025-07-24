@@ -6,6 +6,7 @@
 
 @theme {
   --font-serif: "PP Editorial";
+  --font-heading: "Poppins Bold";
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -42,6 +43,11 @@
     Geist, Inter, Inter override, ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-mono: "Geist Mono", monospace;
+
+  --font-family-sans: var(--font-sans);
+  --font-family-serif: var(--font-serif);
+  --font-family-mono: var(--font-mono);
+  --font-family-heading: var(--font-heading);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -149,8 +155,15 @@
 
 @font-face {
   font-family: "PP Editorial";
-  src: url("/fonts/Iosekva-Regular.ttc") format("ttc");
+  src: url("/fonts/pp-editorial.woff2") format("woff2");
   font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins Bold";
+  src: url("/fonts/Poppins-Bold.ttf") format("truetype");
+  font-weight: bold;
   font-style: normal;
   font-display: swap;
 }

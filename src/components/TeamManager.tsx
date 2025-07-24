@@ -55,11 +55,11 @@ export function TeamManager({
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Teams</h2>
+      <h2 className="text-xl font-bold mb-4 font-heading">Teams</h2>
       {teams.map((team) =>
         team ? (
           <div key={team._id} className="mb-4">
-            <h3 className="font-bold">{team.name}</h3>
+            <h3 className="font-bold font-heading">{team.name}</h3>
             <TeamMember team={team} />
             <ul>
               {teamLists
