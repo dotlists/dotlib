@@ -105,7 +105,11 @@ export default function AuthenticatedApp() {
     await deleteItem({ id });
   };
 
-  if (userProfile === undefined || rawLists === undefined || teams === undefined) {
+  if (
+    userProfile === undefined ||
+    rawLists === undefined ||
+    teams === undefined
+  ) {
     return (
       <div className="flex items-center justify-center h-screen">
         Loading...
@@ -125,6 +129,8 @@ export default function AuthenticatedApp() {
       </div>
     );
   }
+
+  const validTeams = teams.filter(Boolean);
 
   return (
     <main className="flex">
@@ -158,7 +164,7 @@ export default function AuthenticatedApp() {
         </Button>
         <hr className="my-4" />
         <TeamManager
-          teams={teams.filter(Boolean)}
+          teams={validTeams}
           teamLists={teamLists}
           handleCreateList={handleCreateList}
           setSelectedListId={setSelectedListId}
