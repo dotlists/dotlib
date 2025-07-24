@@ -5,7 +5,7 @@ import { ListEditor } from "./components/ListEditor";
 import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
 
-import { api, type Id } from "@/lib/convex";
+import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
 
 type ConvexItem = {
@@ -14,10 +14,8 @@ type ConvexItem = {
   state: "red" | "yellow" | "green";
 };
 
-type ConvexList = {
+type ConvexList = Doc<"lists"> & {
   id: Id<"lists">;
-  name: string;
-  teamId?: Id<"teams">;
   nodes: ConvexItem[];
 };
 
@@ -85,20 +83,6 @@ export default function AuthenticatedApp() {
     if (result) {
       setSelectedListId(result);
       setListName("New List");
-    }
-  };
-
-  const handleDeleteList = async () => {
-    if (lists.length <= 1 || !selectedListId) return;
-    await deleteList({ id: selectedListId });
-    if (lists.length > 0) {
-      const newSelectedList = lists.find(
-        (l: ConvexList) => l.id !== selectedListId,
-      );
-      if (newSelectedList) {
-        setSelectedListId(newSelectedList.id);
-        setListName(newSelectedList.name);
-      }
     }
   };
 

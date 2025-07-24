@@ -2,7 +2,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { Id } from "./_generated/dataModel";
 
 export const createTeam = mutation({
   args: { name: v.string() },

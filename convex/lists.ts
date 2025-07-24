@@ -1,8 +1,8 @@
 // convex/lists.ts
-import { mutation, query, QueryCtx, MutationCtx } from "./_generated/server";
+import { mutation, query, type QueryCtx, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { Id } from "./_generated/dataModel";
+import { type Id } from "./_generated/dataModel";
 
 //
 // FETCH ALL LISTS FOR A USER (Personal and Team)
