@@ -1,7 +1,29 @@
 // convex/teams.ts
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { type Id } from "./_generated/dataModel";
+
+// Helper function to get a user's role in a team
+const getViewerRole = async (
+  ctx: QueryCtx,
+  teamId: Id<"teams">,
+): Promise<"admin" | "member" | null> => {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) {
+    return null;
+  }
+  const membership = await ctx.db
+    .query("team_members")
+    .withIndex("by_team_user", (q) =>
+      q.eq("teamId", teamId).eq("userId", userId),
+    )
+    .first();
+  if (!membership) {
+    return null;
+  }
+  return membership.role as "admin" | "member";
+};
 
 export const createTeam = mutation({
   args: { name: v.string() },
@@ -34,9 +56,9 @@ export const sendInvitation = mutation({
       throw new Error("Unauthorized");
     }
 
-    const team = await ctx.db.get(args.teamId);
-    if (!team || team.ownerId !== userId) {
-      throw new Error("Only team owners can send invitations.");
+    const role = await getViewerRole(ctx, args.teamId);
+    if (role !== "admin") {
+      throw new Error("Only team admins can send invitations.");
     }
 
     const invitee = await ctx.db
@@ -68,6 +90,14 @@ export const sendInvitation = mutation({
       inviterId: userId,
       inviteeId: invitee.userId,
       status: "pending",
+    });
+
+    await ctx.db.insert("notifications", {
+      recipientId: invitee.userId,
+      actorId: userId,
+      type: "invitation",
+      teamId: args.teamId,
+      read: false,
     });
   },
 });
@@ -156,10 +186,14 @@ export const getTeams = query({
 
     const teams = await Promise.all(
       teamMemberships.map(async (membership) => {
-        return await ctx.db.get(membership.teamId);
+        const team = await ctx.db.get(membership.teamId);
+        if (!team) return null;
+        return {
+          ...team,
+          role: membership.role,
+        };
       }),
     );
-    // filter out nulls if a team was deleted but membership remains
     return teams.filter(Boolean);
   },
 });
@@ -184,5 +218,40 @@ export const getTeamMembers = query({
         };
       }),
     );
+  },
+});
+
+export const removeMemberFromTeam = mutation({
+  args: { teamId: v.id("teams"), memberId: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const role = await getViewerRole(ctx, args.teamId);
+    if (role !== "admin") {
+      throw new Error("Only team admins can remove members.");
+    }
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team) {
+      throw new Error("Team not found.");
+    }
+
+    if (team.ownerId === args.memberId) {
+      throw new Error("Cannot remove the team owner.");
+    }
+
+    const membership = await ctx.db
+      .query("team_members")
+      .withIndex("by_team_user", (q) =>
+        q.eq("teamId", args.teamId).eq("userId", args.memberId),
+      )
+      .first();
+
+    if (membership) {
+      await ctx.db.delete(membership._id);
+    }
   },
 });

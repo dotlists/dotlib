@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import type { Doc, Id } from "@/lib/convex";
 import { useAction, useQuery } from "convex/react";
 import { api } from "@/lib/convex";
-import { Sparkles, Calendar as CalendarIcon, User, Trash2, MoreVertical } from "lucide-react";
+import { Sparkles, Calendar as CalendarIcon, User, Trash2, MoreVertical, MessageSquare } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import {
@@ -22,6 +22,7 @@ import {
 } from "./ui/dropdown-menu";
 import { format } from "date-fns";
 import clsx from "clsx";
+import { CommentSection } from "./CommentSection";
 
 interface ListItemProps {
   node: Doc<"items"> & { uuid: Id<"items"> };
@@ -49,6 +50,7 @@ export function ListItem({
   teamId,
 }: ListItemProps) {
   const [text, setText] = useState(node.text);
+  const [isCommenting, setIsCommenting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const breakdownTask = useAction(api.gemini.breakdownTask);
   const teamMembers = useQuery(
@@ -101,174 +103,206 @@ export function ListItem({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="group flex hover:bg-gray-100 rounded-lg my-1 py-1"
+      className="flex flex-col hover:bg-gray-100 rounded-lg my-1 p-1"
       key={node.uuid}
       id={node.uuid}
     >
-      <div
-        onClick={() => {
-          const currentState = node.state as keyof typeof stateOrder;
-          const newState = (stateOrder[currentState] + 1) % 3;
-          handleUpdateItem(node.uuid, {
-            state: stateOrderReversed[newState],
-          });
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          const currentState = node.state as keyof typeof stateOrder;
-          const newState = (stateOrder[currentState] + 2) % 3;
-          handleUpdateItem(node.uuid, {
-            state: stateOrderReversed[newState],
-          });
-        }}
-        className={clsx(
-          "w-6 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs",
-          colorClass,
-        )}
-      ></div>
-      <Textarea
-        ref={textareaRef}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="text-sm md:text-base focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
-        rows={1}
-        onInput={(e) => {
-          const textarea = e.currentTarget;
-          textarea.style.height = "auto";
-          textarea.style.height = `${textarea.scrollHeight}px`;
-        }}
-        onBlur={(e) => {
-          const trimmed = e.currentTarget.value.trim();
-          if (trimmed === "") {
-            handleDeleteItem(node.uuid);
-          } else if (trimmed !== node.text) {
-            handleUpdateItem(node.uuid, { text: trimmed });
-          }
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Backspace" && text === "") {
+      <div className="flex">
+        <div
+          onClick={() => {
+            const currentState = node.state as keyof typeof stateOrder;
+            const newState = (stateOrder[currentState] + 1) % 3;
+            handleUpdateItem(node.uuid, {
+              state: stateOrderReversed[newState],
+            });
+          }}
+          onContextMenu={(e) => {
             e.preventDefault();
-            handleDeleteItem(node.uuid);
-          }
-        }}
-      />
-      {/* Desktop Hover Actions */}
-      <div className="hidden md:flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
-        {teamId && (
+            const currentState = node.state as keyof typeof stateOrder;
+            const newState = (stateOrder[currentState] + 2) % 3;
+            handleUpdateItem(node.uuid, {
+              state: stateOrderReversed[newState],
+            });
+          }}
+          className={clsx(
+            "w-6 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs",
+            colorClass,
+          )}
+        ></div>
+        <Textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="text-sm md:text-base self-center focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
+          rows={1}
+          onInput={(e) => {
+            const textarea = e.currentTarget;
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+          }}
+          onBlur={(e) => {
+            const trimmed = e.currentTarget.value.trim();
+            if (trimmed === "") {
+              handleDeleteItem(node.uuid);
+            } else if (trimmed !== node.text) {
+              handleUpdateItem(node.uuid, { text: trimmed });
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace" && text === "") {
+              e.preventDefault();
+              handleDeleteItem(node.uuid);
+            }
+          }}
+        />
+        {/* Desktop Hover Actions */}
+        <div className="hidden md:flex items-center self-center transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setIsCommenting(!isCommenting)}
+          >
+            <MessageSquare className="h-4 w-4" />
+          </Button>
+          {teamId && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  {assignee ? (
+                    <span className="text-xs">{assignee.username.slice(0, 2)}</span>
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}
+                >
+                  Unassigned
+                </DropdownMenuItem>
+                {teamMembers?.map((member) => (
+                  <DropdownMenuItem
+                    key={member.userId}
+                    onSelect={() =>
+                      handleUpdateItem(node.uuid, { assigneeId: member.userId })
+                    }
+                  >
+                    {member.username}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <CalendarIcon className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <DayPicker
+                mode="single"
+                selected={node.dueDate ? new Date(node.dueDate) : undefined}
+                onSelect={(date) =>
+                  handleUpdateItem(node.uuid, { dueDate: date?.getTime() })
+                }
+              />
+            </PopoverContent>
+          </Popover>
+          {node.dueDate && (
+            <span className="text-xs text-gray-500 mr-2">
+              {format(new Date(node.dueDate), "MMM d")}
+            </span>
+          )}
+          <Button
+            onClick={handleBreakdownTask}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+          >
+            <Sparkles className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => handleDeleteItem(node.uuid)}
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Mobile Kebab Menu */}
+        <div className="md:hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                {assignee ? (
-                  <span className="text-xs">{assignee.username.slice(0, 2)}</span>
-                ) : (
-                  <User className="h-4 w-4" />
-                )}
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem
-                onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}
-              >
-                Unassigned
+              <DropdownMenuItem onClick={() => setIsCommenting(!isCommenting)}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {isCommenting ? "Hide Comments" : "Show Comments"}
               </DropdownMenuItem>
-              {teamMembers?.map((member) => (
-                <DropdownMenuItem
-                  key={member.userId}
-                  onSelect={() =>
-                    handleUpdateItem(node.uuid, { assigneeId: member.userId })
-                  }
-                >
-                  {member.username}
-                </DropdownMenuItem>
-              ))}
+              {teamId && (
+                <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <User className="mr-2 h-4 w-4" />
+                        {assignee ? `Assign: ${assignee.username}` : "Assign"}
+                      </DropdownMenuItem>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}>
+                        Unassigned
+                      </DropdownMenuItem>
+                      {teamMembers?.map((member) => (
+                        <DropdownMenuItem
+                          key={member.userId}
+                          onSelect={() => handleUpdateItem(node.uuid, { assigneeId: member.userId })}
+                        >
+                          {member.username}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    Set Due Date
+                  </DropdownMenuItem>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <DayPicker
+                    mode="single"
+                    selected={node.dueDate ? new Date(node.dueDate) : undefined}
+                    onSelect={(date) =>
+                      handleUpdateItem(node.uuid, { dueDate: date?.getTime() })
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleBreakdownTask}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Breakdown Task
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDeleteItem(node.uuid)} className="text-red-600">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <CalendarIcon className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <DayPicker
-              mode="single"
-              selected={node.dueDate ? new Date(node.dueDate) : undefined}
-              onSelect={(date) =>
-                handleUpdateItem(node.uuid, { dueDate: date?.getTime() })
-              }
-            />
-          </PopoverContent>
-        </Popover>
-        {node.dueDate && (
-          <span className="text-xs text-gray-500 mr-2">
-            {format(new Date(node.dueDate), "MMM d")}
-          </span>
-        )}
-        <Button
-          onClick={handleBreakdownTask}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-        >
-          <Sparkles className="h-4 w-4" />
-        </Button>
-        <Button
-          onClick={() => handleDeleteItem(node.uuid)}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        </div>
       </div>
-
-      {/* Mobile Kebab Menu */}
-      <div className="md:hidden">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {teamId && (
-              <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <User className="mr-2 h-4 w-4" />
-                      {assignee ? `Assign: ${assignee.username}` : "Assign"}
-                    </DropdownMenuItem>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}>
-                      Unassigned
-                    </DropdownMenuItem>
-                    {teamMembers?.map((member) => (
-                      <DropdownMenuItem
-                        key={member.userId}
-                        onSelect={() => handleUpdateItem(node.uuid, { assigneeId: member.userId })}
-                      >
-                        {member.username}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            <DropdownMenuItem onClick={handleBreakdownTask}>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Breakdown Task
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDeleteItem(node.uuid)} className="text-red-600">
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {isCommenting && <CommentSection itemId={node.uuid} />}
     </motion.li>
   );
 }

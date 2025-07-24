@@ -6,12 +6,12 @@ import type { Doc } from "@/lib/convex";
 
 interface TeamMemberProps {
   team: Doc<"teams">;
+  viewerRole: string;
 }
 
-export function TeamMember({ team }: TeamMemberProps) {
+export function TeamMember({ team, viewerRole }: TeamMemberProps) {
   const members = useQuery(api.teams.getTeamMembers, { teamId: team._id });
-  const removeMember = useMutation(api.lists.removeMemberFromTeam);
-  const currentUser = useQuery(api.users.getMyUserProfile);
+  const removeMember = useMutation(api.teams.removeMemberFromTeam);
 
   const handleRemoveMember = (memberId: string) => {
     removeMember({ teamId: team._id, memberId });
@@ -24,17 +24,16 @@ export function TeamMember({ team }: TeamMemberProps) {
           <span className="text-sm text-foreground">
             {member.username} ({member.role})
           </span>
-          {team.ownerId === currentUser?.userId &&
-            member.userId !== team.ownerId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6"
-                onClick={() => handleRemoveMember(member.userId)}
-              >
-                Remove
-              </Button>
-            )}
+          {viewerRole === "admin" && member.userId !== team.ownerId && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6"
+              onClick={() => handleRemoveMember(member.userId)}
+            >
+              Remove
+            </Button>
+          )}
         </li>
       ))}
     </ul>

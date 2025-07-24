@@ -68,7 +68,7 @@ export const getLists = query({
 });
 
 // Helper function to check if a user has access to a list
-const hasAccessToList = async (
+export const hasAccessToList = async (
   ctx: QueryCtx | MutationCtx,
   userId: string,
   listId: Id<"lists">,
@@ -208,8 +208,27 @@ export const deleteListPublic = mutation({
   args: { id: v.id("lists") },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId || !(await hasAccessToList(ctx, userId, args.id))) {
-      throw new Error("Unauthorized");
+    if (!userId) throw new Error("Unauthorized");
+
+    const list = await ctx.db.get(args.id);
+    if (!list) throw new Error("List not found");
+
+    // If it's a team list, check for admin role
+    if (list.teamId) {
+      const membership = await ctx.db
+        .query("team_members")
+        .withIndex("by_team_user", (q) =>
+          q.eq("teamId", list.teamId!).eq("userId", userId),
+        )
+        .first();
+      if (membership?.role !== "admin") {
+        throw new Error("Only team admins can delete team lists.");
+      }
+    } else {
+      // If it's a personal list, check if the user is the owner
+      if (list.userId !== userId) {
+        throw new Error("You can only delete your own lists.");
+      }
     }
 
     // remove items first
@@ -253,6 +272,7 @@ export const createItemPublic = mutation({
     listId: v.id("lists"),
     text: v.string(),
     state: v.string(),
+    startDate: v.optional(v.number()),
     dueDate: v.optional(v.number()),
     assigneeId: v.optional(v.string()),
   },
@@ -269,6 +289,7 @@ export const createItemPublic = mutation({
       userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      startDate: args.startDate,
       dueDate: args.dueDate,
       assigneeId: args.assigneeId,
     });
@@ -280,6 +301,7 @@ export const updateItem = mutation({
     id: v.id("items"),
     text: v.optional(v.string()),
     state: v.optional(v.string()),
+    startDate: v.optional(v.number()),
     dueDate: v.optional(v.number()),
     assigneeId: v.optional(v.string()),
   },
@@ -291,6 +313,17 @@ export const updateItem = mutation({
     const item = await ctx.db.get(args.id);
     if (!item || !(await hasAccessToList(ctx, userId, item.listId))) {
       throw new Error("Unauthorized");
+    }
+
+    // If assignee is changing, create a notification
+    if (args.assigneeId && args.assigneeId !== item.assigneeId) {
+      await ctx.db.insert("notifications", {
+        recipientId: args.assigneeId,
+        actorId: userId,
+        type: "assignment",
+        itemId: item._id,
+        read: false,
+      });
     }
 
     const { id, ...rest } = args;
@@ -323,33 +356,5 @@ export const deleteItemPublic = mutation({
   },
 });
 
-export const removeMemberFromTeam = mutation({
-  args: { teamId: v.id("teams"), memberId: v.string() },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
 
-    const team = await ctx.db.get(args.teamId);
-    if (!team || team.ownerId !== userId) {
-      throw new Error("Only team owners can remove members");
-    }
-
-    if (team.ownerId === args.memberId) {
-      throw new Error("Cannot remove the team owner");
-    }
-
-    const membership = await ctx.db
-      .query("team_members")
-      .withIndex("by_team_user", (q) =>
-        q.eq("teamId", args.teamId).eq("userId", args.memberId),
-      )
-      .first();
-
-    if (membership) {
-      await ctx.db.delete(membership._id);
-    }
-  },
-});
 

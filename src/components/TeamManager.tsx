@@ -7,7 +7,7 @@ import type { Doc } from "@/lib/convex";
 import { TeamMember } from "./TeamMember";
 
 interface TeamManagerProps {
-  teams: (Doc<"teams"> | null)[];
+  teams: (Doc<"teams"> & { role: string })[];
   teamLists: Doc<"lists">[];
   handleCreateList: (teamId: Doc<"teams">["_id"]) => void;
   setSelectedListId: (listId: Doc<"lists">["_id"]) => void;
@@ -60,7 +60,7 @@ export function TeamManager({
         team ? (
           <div key={team._id} className="mb-4">
             <h3 className="font-bold font-heading">{team.name}</h3>
-            <TeamMember team={team} />
+            <TeamMember team={team} viewerRole={team.role} />
             <ul>
               {teamLists
                 .filter((list) => list.teamId === team._id)
@@ -89,26 +89,28 @@ export function TeamManager({
             >
               + New Team List
             </Button>
-            <div className="mt-2">
-              <Input
-                value={
-                  selectedTeamForInvite === team._id ? inviteeUsername : ""
-                }
-                onChange={(e) => {
-                  setSelectedTeamForInvite(team._id);
-                  setInviteeUsername(e.target.value);
-                }}
-                placeholder="Invite user..."
-                className="h-8"
-              />
-              <Button
-                onClick={() => handleSendInvitation(team._id)}
-                size="sm"
-                className="mt-1"
-              >
-                Invite
-              </Button>
-            </div>
+            {team.role === "admin" && (
+              <div className="mt-2">
+                <Input
+                  value={
+                    selectedTeamForInvite === team._id ? inviteeUsername : ""
+                  }
+                  onChange={(e) => {
+                    setSelectedTeamForInvite(team._id);
+                    setInviteeUsername(e.target.value);
+                  }}
+                  placeholder="Invite user..."
+                  className="h-8"
+                />
+                <Button
+                  onClick={() => handleSendInvitation(team._id)}
+                  size="sm"
+                  className="mt-1"
+                >
+                  Invite
+                </Button>
+              </div>
+            )}
           </div>
         ) : null,
       )}

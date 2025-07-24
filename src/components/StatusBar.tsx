@@ -8,17 +8,20 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
-import { InvitationDropdown } from "./InvitationDropdown";
+import { Notifications } from "./Notifications";
 import clsx from "clsx";
 
 import {
   ChevronDown,
   ChevronsRight,
   Menu,
+  List,
+  BarChart3,
 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
+type ViewMode = "list" | "gantt";
 
 interface StatusBarProps {
   isDesktopSidebarOpen: boolean;
@@ -33,6 +36,8 @@ interface StatusBarProps {
   listName: string;
   setListName: (name: string) => void;
   handleListNameChange: (name: string) => void;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
 }
 
 export function StatusBar({
@@ -44,6 +49,8 @@ export function StatusBar({
   listName,
   setListName,
   handleListNameChange,
+  viewMode,
+  setViewMode,
 }: StatusBarProps) {
   const { signOut } = useAuthActions();
   const selectedList = lists.find((list) => list.id === selectedListId);
@@ -103,7 +110,23 @@ export function StatusBar({
             }}
             autoComplete="off"
           />
-          <InvitationDropdown />
+          <div className="flex items-center">
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-5 w-5" />
+            </Button>
+            <Button
+              variant={viewMode === "gantt" ? "secondary" : "ghost"}
+              size="icon"
+              onClick={() => setViewMode("gantt")}
+            >
+              <BarChart3 className="h-5 w-5" />
+            </Button>
+          </div>
+          <Notifications />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -112,7 +135,7 @@ export function StatusBar({
                 size="icon"
                 tabIndex={-1}
               >
-                <ChevronDown className="w-5 h-5" />
+                <ChevronDown className="w-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white p-3 rounded-lg">

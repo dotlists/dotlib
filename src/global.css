@@ -231,3 +231,31 @@
     @apply p-4;
   }
 }
+
+/* Gantt chart styles */
+.gantt .bar {
+  stroke: #333;
+  stroke-width: 1px;
+  cursor: pointer;
+}
+
+.gantt .bar-progress {
+  fill: rgba(0, 0, 0, 0.2);
+}
+
+.gantt .bar-label {
+  font-size: 12px;
+  fill: #333;
+}
+
+.gantt-task-red .bar-progress {
+  fill: #f36868; /* Red */
+}
+
+.gantt-task-yellow .bar-progress {
+  fill: #f5d76e; /* Yellow */
+}
+
+.gantt-task-green .bar-progress {
+  fill: #34d399; /* Green */
+}
