@@ -38,6 +38,7 @@ http.route({
     // You might want to avoid leaking internal IDs or other sensitive fields
     const sanitized = {
       username: user.username,
+      userId: user.userId
       // Add more fields if your schema supports them
     };
 
