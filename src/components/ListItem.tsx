@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
@@ -15,6 +15,8 @@ interface ListItemProps {
     updates: { text?: string; state?: "red" | "yellow" | "green" },
   ) => void;
   handleDeleteItem: (id: Id<"items">) => void;
+  focusedItemId: Id<"items"> | null;
+  setFocusedItemId: (id: Id<"items"> | null) => void;
 }
 
 const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
@@ -24,8 +26,19 @@ export function ListItem({
   node,
   handleUpdateItem,
   handleDeleteItem,
+  focusedItemId,
+  setFocusedItemId,
 }: ListItemProps) {
   const [text, setText] = useState(node.text);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (node.uuid === focusedItemId) {
+      textareaRef.current?.focus();
+      textareaRef.current?.select(); // Select the text for easy renaming
+      setFocusedItemId(null);
+    }
+  }, [focusedItemId, node.uuid, setFocusedItemId]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -70,9 +83,10 @@ export function ListItem({
             state: stateOrderReversed[newState],
           });
         }}
-        className={`w-10 min-h-[100%] mr-5 rounded-full hover:blur-xs transition-all duration-100 ${colorClass}`}
+        className={`w-10 min-h-[100%] mr-5 rounded-full hover:blur-xs transition-all duration-100 cursor-pointer ${colorClass}`}
       ></div>
       <Textarea
+        ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
         className="text-xl focus:outline-none w-full focus:ring-none"

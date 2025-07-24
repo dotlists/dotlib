@@ -52,6 +52,7 @@ export default function AuthenticatedApp() {
     null,
   );
   const [listName, setListName] = useState<string>("");
+  const [focusedItemId, setFocusedItemId] = useState<Id<"items"> | null>(null);
 
   const selectedList = lists.find(
     (list: ConvexList) => list.id === selectedListId,
@@ -90,7 +91,8 @@ export default function AuthenticatedApp() {
     state: "red" | "yellow" | "green" = "red",
   ) => {
     if (selectedListId) {
-      await createItem({ listId: selectedListId, text, state });
+      const newItemId = await createItem({ listId: selectedListId, text, state });
+      setFocusedItemId(newItemId);
     }
   };
 
@@ -187,6 +189,8 @@ export default function AuthenticatedApp() {
               handleUpdateItem={handleUpdateItem}
               handleAddItem={handleAddItem}
               handleDeleteItem={handleDeleteItem}
+              focusedItemId={focusedItemId}
+              setFocusedItemId={setFocusedItemId}
             />
           )}
         </div>

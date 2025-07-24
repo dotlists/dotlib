@@ -178,7 +178,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
   h1 {
     @apply text-6xl font-serif @xs:text-8xl;

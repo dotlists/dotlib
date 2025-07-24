@@ -21,7 +21,7 @@ export function TeamMember({ team }: TeamMemberProps) {
     <ul className="pl-4 mt-2 space-y-1">
       {members?.map((member) => (
         <li key={member._id} className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-foreground">
             {member.username} ({member.role})
           </span>
           {team.ownerId === currentUser?.userId &&

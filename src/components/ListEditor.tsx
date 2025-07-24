@@ -19,6 +19,8 @@ interface ListEditorProps {
   ) => void;
   handleAddItem: (text: string, state?: "red" | "yellow" | "green") => void;
   handleDeleteItem: (id: Id<"items">) => void;
+  focusedItemId: Id<"items"> | null;
+  setFocusedItemId: (id: Id<"items"> | null) => void;
 }
 
 export function ListEditor({
@@ -26,6 +28,8 @@ export function ListEditor({
   handleUpdateItem,
   handleAddItem,
   handleDeleteItem,
+  focusedItemId,
+  setFocusedItemId,
 }: ListEditorProps) {
   const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
 
@@ -44,6 +48,8 @@ export function ListEditor({
             node={node}
             handleUpdateItem={handleUpdateItem}
             handleDeleteItem={handleDeleteItem}
+            focusedItemId={focusedItemId}
+            setFocusedItemId={setFocusedItemId}
           />
         ))}
         <motion.li
