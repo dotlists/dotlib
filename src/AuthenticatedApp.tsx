@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
+import { TeamManager } from "./components/TeamManager";
+import { CreateUsername } from "./components/CreateUsername";
 
 import { api, type Id } from "@/lib/convex";
 import { Button } from "./components/ui/button";
@@ -15,11 +17,14 @@ type ConvexItem = {
 type ConvexList = {
   id: Id<"lists">;
   name: string;
+  teamId?: Id<"teams">;
   nodes: ConvexItem[];
 };
 
 export default function AuthenticatedApp() {
+  const userProfile = useQuery(api.users.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
+  const teams = useQuery(api.teams.getTeams) ?? [];
 
   const createList = useMutation(api.lists.createList);
   const updateList = useMutation(api.lists.updateList);
@@ -43,11 +48,13 @@ export default function AuthenticatedApp() {
     [rawLists],
   );
 
+  const personalLists = lists.filter((list) => !list.teamId);
+  const teamLists = lists.filter((list) => list.teamId);
+
   const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
     null,
   );
   const [listName, setListName] = useState<string>("");
-  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const selectedList = lists.find(
     (list: ConvexList) => list.id === selectedListId,
@@ -73,8 +80,8 @@ export default function AuthenticatedApp() {
     }
   };
 
-  const handleCreateList = async () => {
-    const result = await createList({ name: "New List" });
+  const handleCreateList = async (teamId?: Id<"teams">) => {
+    const result = await createList({ name: "New List", teamId });
     if (result) {
       setSelectedListId(result);
       setListName("New List");
@@ -115,43 +122,85 @@ export default function AuthenticatedApp() {
     await deleteItem({ id });
   };
 
-  const handleReorderLists = async () => {
-    // Note: List reordering will be implemented later with a separate order field
-  };
+  if (userProfile === undefined || rawLists === undefined) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  if (userProfile === null) {
+    return <CreateUsername />;
+  }
 
   if (lists.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-4xl font-bold mb-8">No lists yet!</h1>
-        <Button onClick={handleCreateList}>Create a new list</Button>
+        <Button onClick={() => handleCreateList()}>Create a new list</Button>
       </div>
     );
   }
 
   return (
-    <main className="flex flex-col fixed overflow-y-hidden">
-      <StatusBar
-        lists={lists}
-        selectedListId={selectedListId}
-        setSelectedListId={setSelectedListId}
-        listName={listName}
-        setListName={setListName}
-        handleListNameChange={handleListNameChange}
-        handleCreateList={handleCreateList}
-        handleDeleteList={handleDeleteList}
-        handleReorderLists={handleReorderLists}
-        dragOverIdx={dragOverIdx}
-        setDragOverIdx={setDragOverIdx}
-      />
-      <div className="mt-4">
-        {selectedList && (
-          <ListEditor
-            state={selectedList}
-            handleUpdateItem={handleUpdateItem}
-            handleAddItem={handleAddItem}
-            handleDeleteItem={handleDeleteItem}
-          />
-        )}
+    <main className="flex">
+      <div className="w-1/4 p-4 border-r h-screen overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4">Personal Lists</h2>
+        <ul>
+          {personalLists.map((list) => (
+            <li
+              key={list.id}
+              className={`cursor-pointer p-2 rounded ${
+                selectedListId === list.id
+                  ? "bg-muted/50 text-muted-foreground"
+                  : ""
+              }`}
+              onClick={() => {
+                setSelectedListId(list.id);
+                setListName(list.name);
+              }}
+            >
+              {list.name}
+            </li>
+          ))}
+        </ul>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleCreateList()}
+          className="mt-1"
+        >
+          + New Personal List
+        </Button>
+        <hr className="my-4" />
+        <TeamManager
+          teams={teams}
+          teamLists={teamLists}
+          handleCreateList={handleCreateList}
+          setSelectedListId={setSelectedListId}
+          setListName={setListName}
+          selectedListId={selectedListId}
+        />
+      </div>
+      <div className="w-3/4 flex flex-col right-0">
+        <StatusBar
+          lists={lists}
+          selectedListId={selectedListId}
+          listName={listName}
+          setListName={setListName}
+          handleListNameChange={handleListNameChange}
+        />
+        <div className="mt-8 px-4">
+          {selectedList && (
+            <ListEditor
+              state={selectedList}
+              handleUpdateItem={handleUpdateItem}
+              handleAddItem={handleAddItem}
+              handleDeleteItem={handleDeleteItem}
+            />
+          )}
+        </div>
       </div>
     </main>
   );

@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
+import { InvitationDropdown } from "./InvitationDropdown";
 
 import { ChevronDown } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -23,39 +24,27 @@ interface StatusBarProps {
     }>;
   }>;
   selectedListId: Id<"lists"> | null;
-  setSelectedListId: (id: Id<"lists">) => void;
   listName: string;
   setListName: (name: string) => void;
   handleListNameChange: (name: string) => void;
-  handleCreateList: () => void;
-  handleDeleteList: () => void;
-  handleReorderLists: (fromIdx: number, toIdx: number) => void;
-  dragOverIdx: number | null;
-  setDragOverIdx: (idx: number | null) => void;
 }
 
 export function StatusBar({
   lists,
   selectedListId,
-  setSelectedListId,
   listName,
   setListName,
   handleListNameChange,
-  handleCreateList,
-  handleDeleteList,
 }: StatusBarProps) {
   const { signOut } = useAuthActions();
   const selectedList = lists.find((list) => list.id === selectedListId);
 
   if (!selectedList) {
     return (
-      <div className="w-[100vw] h-[10vh] p-3">
+      <div className="w-full h-[10vh] p-3">
         <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
           <div className="flex px-3 py-1 items-center">
             <p className="text-lg text-muted-foreground">No list selected.</p>
-            <Button onClick={handleCreateList} className="ml-auto">
-              Create New List
-            </Button>
           </div>
         </div>
       </div>
@@ -72,9 +61,9 @@ export function StatusBar({
   const greenPct = (greenCount / total) * 100;
 
   return (
-    <div className="w-[100vw] h-[10vh] p-3">
+    <div className="w-full h-[10vh] p-3">
       <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
-        <div className="flex px-3 py-1">
+        <div className="flex px-3 py-1 items-center">
           <Input
             id="list-name-input"
             className="font-lora w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -87,6 +76,7 @@ export function StatusBar({
             }}
             autoComplete="off"
           />
+          <InvitationDropdown />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -99,38 +89,6 @@ export function StatusBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white p-3 rounded-lg">
-              {lists.map((list) => (
-                <DropdownMenuItem
-                  key={list.id}
-                  onClick={() => {
-                    setSelectedListId(list.id);
-                  }}
-                  className={`cursor-grab select-none ${
-                    selectedListId === list.id ? "font-bold " : ""
-                  }`}
-                >
-                  <span className="mr-auto">
-                    {list.name || (
-                      <span className="italic text-muted-foreground">
-                        Untitled
-                      </span>
-                    )}
-                  </span>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuItem
-                key="create-new-list"
-                onClick={handleCreateList}
-              >
-                + create new list
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                key="delete-current-list"
-                onClick={handleDeleteList}
-                className="text-red-500"
-              >
-                delete current list
-              </DropdownMenuItem>
               <DropdownMenuItem key="log-out" onClick={signOut}>
                 log out
               </DropdownMenuItem>
@@ -167,3 +125,4 @@ export function StatusBar({
     </div>
   );
 }
+
