@@ -100,7 +100,7 @@ export function ListItem({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="group flex items-center hover:bg-gray-100 rounded-lg my-1 py-1"
+      className="group flex hover:bg-gray-100 rounded-lg my-1 py-1"
       key={node.uuid}
       id={node.uuid}
     >
@@ -121,7 +121,7 @@ export function ListItem({
           });
         }}
         className={clsx(
-          "w-6 h-6 mx-2 rounded-full transition-all duration-100 cursor-pointer",
+          "w-6 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs",
           colorClass,
         )}
       ></div>
@@ -129,7 +129,7 @@ export function ListItem({
         ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="text-base focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
+        className="text-base self-center focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
         rows={1}
         onInput={(e) => {
           const textarea = e.currentTarget;
@@ -151,7 +151,7 @@ export function ListItem({
           }
         }}
       />
-      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
         {teamId && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
