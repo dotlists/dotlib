@@ -18,4 +18,34 @@ http.route({
   }),
 });
 
+http.route({
+  path: "/user",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const { searchParams } = new URL(request.url);
+    const username = searchParams.get("username");
+
+    if (!username) {
+      return new Response("Missing `username` parameter", { status: 400 });
+    }
+
+    const user = await ctx.runQuery("users/findUserByUsername", { username });
+
+    if (!user) {
+      return new Response("User not found", { status: 404 });
+    }
+
+    // You might want to avoid leaking internal IDs or other sensitive fields
+    const sanitized = {
+      username: user.username,
+      // Add more fields if your schema supports them
+    };
+
+    return new Response(JSON.stringify(sanitized), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
 export default http;
