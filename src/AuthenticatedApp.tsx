@@ -22,8 +22,7 @@ type ConvexList = Doc<"lists"> & {
 export default function AuthenticatedApp() {
   const userProfile = useQuery(api.users.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
-  const teamsQuery = useQuery(api.teams.getTeams);
-  const teams = useMemo(() => teamsQuery?.filter(Boolean) ?? [], [teamsQuery]);
+  const teams = useQuery(api.teams.getTeams);
 
   const createList = useMutation(api.lists.createList);
   const updateList = useMutation(api.lists.updateList);
@@ -106,7 +105,7 @@ export default function AuthenticatedApp() {
     await deleteItem({ id });
   };
 
-  if (userProfile === undefined || rawLists === undefined) {
+  if (userProfile === undefined || rawLists === undefined || teams === undefined) {
     return (
       <div className="flex items-center justify-center h-screen">
         Loading...
@@ -159,7 +158,7 @@ export default function AuthenticatedApp() {
         </Button>
         <hr className="my-4" />
         <TeamManager
-          teams={teams}
+          teams={teams.filter(Boolean)}
           teamLists={teamLists}
           handleCreateList={handleCreateList}
           setSelectedListId={setSelectedListId}
