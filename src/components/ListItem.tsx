@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import type { Doc, Id } from "@/lib/convex";
 import { useAction, useQuery } from "convex/react";
 import { api } from "@/lib/convex";
-import { Sparkles, Calendar as CalendarIcon, User, Trash2 } from "lucide-react";
+import { Sparkles, Calendar as CalendarIcon, User, Trash2, MoreVertical } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import {
@@ -18,6 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
 import { format } from "date-fns";
 import clsx from "clsx";
@@ -129,7 +130,7 @@ export function ListItem({
         ref={textareaRef}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="text-base self-center focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
+        className="text-sm md:text-base focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
         rows={1}
         onInput={(e) => {
           const textarea = e.currentTarget;
@@ -151,7 +152,8 @@ export function ListItem({
           }
         }}
       />
-      <div className="flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Desktop Hover Actions */}
+      <div className="hidden md:flex items-center self-center opacity-0 group-hover:opacity-100 transition-opacity">
         {teamId && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -219,6 +221,53 @@ export function ListItem({
         >
           <Trash2 className="h-4 w-4" />
         </Button>
+      </div>
+
+      {/* Mobile Kebab Menu */}
+      <div className="md:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {teamId && (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <User className="mr-2 h-4 w-4" />
+                      {assignee ? `Assign: ${assignee.username}` : "Assign"}
+                    </DropdownMenuItem>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}>
+                      Unassigned
+                    </DropdownMenuItem>
+                    {teamMembers?.map((member) => (
+                      <DropdownMenuItem
+                        key={member.userId}
+                        onSelect={() => handleUpdateItem(node.uuid, { assigneeId: member.userId })}
+                      >
+                        {member.username}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem onClick={handleBreakdownTask}>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Breakdown Task
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDeleteItem(node.uuid)} className="text-red-600">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </motion.li>
   );

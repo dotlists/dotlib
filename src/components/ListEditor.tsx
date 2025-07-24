@@ -41,7 +41,7 @@ export function ListEditor({
   });
 
   return (
-    <motion.ul className="h-[85vh] pr-3 mb-0 overflow-y-scroll overflow-x-hidden">
+    <motion.ul className="px-2 md:px-3 mb-0">
       <AnimatePresence>
         {sortedNodes.map((node) => (
           <ListItem

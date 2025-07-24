@@ -14,14 +14,16 @@ import clsx from "clsx";
 import {
   ChevronDown,
   ChevronsRight,
+  Menu,
 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
 interface StatusBarProps {
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (isOpen: boolean) => void;
+  isDesktopSidebarOpen: boolean;
+  setIsDesktopSidebarOpen: (isOpen: boolean) => void;
+  setIsMobileDrawerOpen: (isOpen: boolean) => void;
   lists: Array<{
     id: Id<"lists">;
     name: string;
@@ -34,8 +36,9 @@ interface StatusBarProps {
 }
 
 export function StatusBar({
-  isSidebarOpen,
-  setIsSidebarOpen,
+  isDesktopSidebarOpen,
+  setIsDesktopSidebarOpen,
+  setIsMobileDrawerOpen,
   lists,
   selectedListId,
   listName,
@@ -70,12 +73,20 @@ export function StatusBar({
     <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
       <div className="rounded-b-2xl rounded-t-lg border-3">
         <div className="flex px-3 py-1 items-center">
-          {!isSidebarOpen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileDrawerOpen(true)}
+            className="mr-2 md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          {!isDesktopSidebarOpen && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsSidebarOpen(true)}
-              className="mr-2"
+              onClick={() => setIsDesktopSidebarOpen(true)}
+              className="mr-2 hidden md:block"
             >
               <ChevronsRight className="h-5 w-5" />
             </Button>
@@ -132,7 +143,7 @@ export function StatusBar({
             className="transition-all duration-100"
             style={{
               width: `${greenPct}%`,
-              backgroundColor: greenCount > 0 ? "#4ade80" : "transparent",
+              backgroundColor: greenCount > 0 ? "#22c55e" : "transparent",
               transition: "width 0.3s",
             }}
           />

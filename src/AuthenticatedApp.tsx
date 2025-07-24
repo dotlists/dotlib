@@ -28,7 +28,8 @@ export default function AuthenticatedApp() {
   const updateItem = useMutation(api.lists.updateItem);
   const deleteItem = useMutation(api.lists.deleteItemPublic);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const lists: ConvexList[] = useMemo(
     () =>
@@ -58,16 +59,9 @@ export default function AuthenticatedApp() {
   );
 
   useEffect(() => {
-    if (lists.length === 0) {
-      if (selectedListId !== null) {
-        setSelectedListId(null);
-        setListName("");
-      }
-    } else {
-      if (!selectedListId || !lists.some((list) => list.id === selectedListId)) {
-        setSelectedListId(lists[0].id);
-        setListName(lists[0].name);
-      }
+    if (lists.length > 0 && (!selectedListId || !lists.some(list => list.id === selectedListId))) {
+      setSelectedListId(lists[0].id);
+      setListName(lists[0].name);
     }
   }, [lists, selectedListId]);
 
@@ -82,6 +76,7 @@ export default function AuthenticatedApp() {
     if (result) {
       setSelectedListId(result);
       setListName("New List");
+      setIsMobileDrawerOpen(false);
     }
   };
 
@@ -106,16 +101,8 @@ export default function AuthenticatedApp() {
     await deleteItem({ id });
   };
 
-  if (
-    userProfile === undefined ||
-    rawLists === undefined ||
-    teams === undefined
-  ) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
-      </div>
-    );
+  if (userProfile === undefined || rawLists === undefined || teams === undefined) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
   if (userProfile === null) {
@@ -133,85 +120,107 @@ export default function AuthenticatedApp() {
 
   const validTeams = teams.filter(Boolean);
 
+  const sidebarContent = (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold font-heading">Personal Lists</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => isMobileDrawerOpen ? setIsMobileDrawerOpen(false) : setIsDesktopSidebarOpen(false)}
+        >
+          <ChevronsLeft className="h-5 w-5" />
+        </Button>
+      </div>
+      <ul>
+        {personalLists.map((list) => (
+          <li
+            key={list.id}
+            className={`cursor-pointer p-2 rounded ${selectedListId === list.id ? "bg-muted/50 text-muted-foreground" : ""}`}
+            onClick={() => {
+              setSelectedListId(list.id);
+              setListName(list.name);
+              setIsMobileDrawerOpen(false);
+            }}
+          >
+            {list.name}
+          </li>
+        ))}
+      </ul>
+      <Button variant="ghost" size="sm" onClick={() => handleCreateList()} className="mt-1">
+        + New Personal List
+      </Button>
+      <hr className="my-4" />
+      <TeamManager
+        teams={validTeams}
+        teamLists={teamLists}
+        handleCreateList={handleCreateList}
+        setSelectedListId={(id) => {
+          setSelectedListId(id);
+          setIsMobileDrawerOpen(false);
+        }}
+        setListName={setListName}
+        selectedListId={selectedListId}
+      />
+    </>
+  );
+
   return (
-    <main className="flex">
+    <main className="relative md:flex h-screen">
+      {/* Mobile Drawer */}
       <div
         className={clsx(
-          "border-r h-screen overflow-y-auto transition-all duration-300",
+          "fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden",
           {
-            "w-1/4 p-4": isSidebarOpen,
-            "w-0 p-0 border-0": !isSidebarOpen,
+            "opacity-100 pointer-events-auto": isMobileDrawerOpen,
+            "opacity-0 pointer-events-none": !isMobileDrawerOpen,
+          },
+        )}
+        onClick={() => setIsMobileDrawerOpen(false)}
+      />
+      <div
+        className={clsx(
+          "fixed top-0 left-0 h-full bg-background z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
+          {
+            "translate-x-0": isMobileDrawerOpen,
+            "-translate-x-full": !isMobileDrawerOpen,
           },
         )}
       >
-        {isSidebarOpen && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold font-heading">
-                Personal Lists
-              </h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSidebarOpen(false)}
-              >
-                <ChevronsLeft className="h-5 w-5" />
-              </Button>
-            </div>
-            <ul>
-              {personalLists.map((list) => (
-                <li
-                  key={list.id}
-                  className={`cursor-pointer p-2 rounded ${
-                    selectedListId === list.id
-                      ? "bg-muted/50 text-muted-foreground"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedListId(list.id);
-                    setListName(list.name);
-                  }}
-                >
-                  {list.name}
-                </li>
-              ))}
-            </ul>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCreateList()}
-              className="mt-1"
-            >
-              + New Personal List
-            </Button>
-            <hr className="my-4" />
-            <TeamManager
-              teams={validTeams}
-              teamLists={teamLists}
-              handleCreateList={handleCreateList}
-              setSelectedListId={setSelectedListId}
-              setListName={setListName}
-              selectedListId={selectedListId}
-            />
-          </div>
-        )}
+        {sidebarContent}
       </div>
+
+      {/* Desktop Sidebar */}
       <div
-        className={clsx("flex flex-col right-0 transition-all duration-300", {
-          "w-3/4": isSidebarOpen,
-          "w-full": !isSidebarOpen,
+        className={clsx(
+          "hidden md:block border-r h-full overflow-y-auto transition-all duration-300",
+          {
+            "w-1/4 p-4": isDesktopSidebarOpen,
+            "w-0 p-0 border-0": !isDesktopSidebarOpen,
+          },
+        )}
+      >
+        {isDesktopSidebarOpen && sidebarContent}
+      </div>
+
+      {/* Main Content */}
+      <div
+        className={clsx("flex flex-col w-full h-full transition-all duration-300", {
+          "md:w-3/4": isDesktopSidebarOpen,
+          "md:w-full": !isDesktopSidebarOpen,
         })}
       >
         <StatusBar
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
+          isDesktopSidebarOpen={isDesktopSidebarOpen}
+          setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+          setIsMobileDrawerOpen={setIsMobileDrawerOpen}
           lists={lists}
           selectedListId={selectedListId}
           listName={listName}
           setListName={setListName}
           handleListNameChange={handleListNameChange}
         />
-        <div className="mt-8 px-4">
+        <div className="flex-grow overflow-y-auto px-4 mt-16">
           {selectedList && (
             <ListEditor
               state={selectedList}
