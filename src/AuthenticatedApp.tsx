@@ -4,6 +4,8 @@ import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
 import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
+import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import clsx from "clsx";
 
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
@@ -29,6 +31,8 @@ export default function AuthenticatedApp() {
   const createItem = useMutation(api.lists.createItem);
   const updateItem = useMutation(api.lists.updateItem);
   const deleteItem = useMutation(api.lists.deleteItem);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const lists: ConvexList[] = useMemo(
     () =>
@@ -136,46 +140,76 @@ export default function AuthenticatedApp() {
 
   return (
     <main className="flex">
-      <div className="w-1/4 p-4 border-r h-screen overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 font-heading">Personal Lists</h2>
-        <ul>
-          {personalLists.map((list) => (
-            <li
-              key={list.id}
-              className={`cursor-pointer p-2 rounded ${
-                selectedListId === list.id
-                  ? "bg-muted/50 text-muted-foreground"
-                  : ""
-              }`}
-              onClick={() => {
-                setSelectedListId(list.id);
-                setListName(list.name);
-              }}
+      <div
+        className={clsx(
+          "border-r h-screen overflow-y-auto transition-all duration-300",
+          {
+            "w-1/4 p-4": isSidebarOpen,
+            "w-0 p-0 border-0": !isSidebarOpen,
+          },
+        )}
+      >
+        {isSidebarOpen && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold font-heading">
+                Personal Lists
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(false)}
+              >
+                <ChevronsLeft className="h-5 w-5" />
+              </Button>
+            </div>
+            <ul>
+              {personalLists.map((list) => (
+                <li
+                  key={list.id}
+                  className={`cursor-pointer p-2 rounded ${
+                    selectedListId === list.id
+                      ? "bg-muted/50 text-muted-foreground"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedListId(list.id);
+                    setListName(list.name);
+                  }}
+                >
+                  {list.name}
+                </li>
+              ))}
+            </ul>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCreateList()}
+              className="mt-1"
             >
-              {list.name}
-            </li>
-          ))}
-        </ul>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleCreateList()}
-          className="mt-1"
-        >
-          + New Personal List
-        </Button>
-        <hr className="my-4" />
-        <TeamManager
-          teams={validTeams}
-          teamLists={teamLists}
-          handleCreateList={handleCreateList}
-          setSelectedListId={setSelectedListId}
-          setListName={setListName}
-          selectedListId={selectedListId}
-        />
+              + New Personal List
+            </Button>
+            <hr className="my-4" />
+            <TeamManager
+              teams={validTeams}
+              teamLists={teamLists}
+              handleCreateList={handleCreateList}
+              setSelectedListId={setSelectedListId}
+              setListName={setListName}
+              selectedListId={selectedListId}
+            />
+          </div>
+        )}
       </div>
-      <div className="w-3/4 flex flex-col right-0">
+      <div
+        className={clsx("flex flex-col right-0 transition-all duration-300", {
+          "w-3/4": isSidebarOpen,
+          "w-full": !isSidebarOpen,
+        })}
+      >
         <StatusBar
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
           lists={lists}
           selectedListId={selectedListId}
           listName={listName}

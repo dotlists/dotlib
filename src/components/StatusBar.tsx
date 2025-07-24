@@ -9,11 +9,14 @@ import {
   DropdownMenuItem,
 } from "./ui/dropdown-menu";
 import { InvitationDropdown } from "./InvitationDropdown";
+import clsx from "clsx";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronsRight } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 interface StatusBarProps {
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (isOpen: boolean) => void;
   lists: Array<{
     id: Id<"lists">;
     name: string;
@@ -30,6 +33,8 @@ interface StatusBarProps {
 }
 
 export function StatusBar({
+  isSidebarOpen,
+  setIsSidebarOpen,
   lists,
   selectedListId,
   listName,
@@ -42,7 +47,7 @@ export function StatusBar({
   if (!selectedList) {
     return (
       <div className="w-full h-[10vh] p-3">
-        <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
+        <div className="rounded-b-2xl rounded-t-lg border-3">
           <div className="flex px-3 py-1 items-center">
             <p className="text-lg text-muted-foreground">No list selected.</p>
           </div>
@@ -61,9 +66,19 @@ export function StatusBar({
   const greenPct = (greenCount / total) * 100;
 
   return (
-    <div className="w-full h-[10vh] p-3">
-      <div className="rounded-b-2xl rounded-t-lg border-3 overflow-hidden">
+    <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
+      <div className="rounded-b-2xl rounded-t-lg border-3">
         <div className="flex px-3 py-1 items-center">
+          {!isSidebarOpen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+              className="mr-2"
+            >
+              <ChevronsRight className="h-5 w-5" />
+            </Button>
+          )}
           <Input
             id="list-name-input"
             className="font-lora w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
