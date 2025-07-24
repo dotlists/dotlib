@@ -7,7 +7,7 @@ import type { Doc } from "@/lib/convex";
 import { TeamMember } from "./TeamMember";
 
 interface TeamManagerProps {
-  teams: Doc<"teams">[];
+  teams: (Doc<"teams"> | null)[];
   teamLists: Doc<"lists">[];
   handleCreateList: (teamId: Doc<"teams">["_id"]) => void;
   setSelectedListId: (listId: Doc<"lists">["_id"]) => void;
@@ -56,60 +56,62 @@ export function TeamManager({
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Teams</h2>
-      {teams.map((team) => (
-        <div key={team._id} className="mb-4">
-          <h3 className="font-bold">{team.name}</h3>
-          <TeamMember team={team} />
-          <ul>
-            {teamLists
-              .filter((list) => list.teamId === team._id)
-              .map((list) => (
-                <li
-                  key={list._id}
-                  className={`cursor-pointer p-2 rounded ${
-                    selectedListId === list._id
-                      ? "bg-muted/50 text-muted-foreground"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedListId(list._id);
-                    setListName(list.name);
-                  }}
-                >
-                  {list.name}
-                </li>
-              ))}
-          </ul>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleCreateList(team._id)}
-            className="mt-1"
-          >
-            + New Team List
-          </Button>
-          <div className="mt-2">
-            <Input
-              value={
-                selectedTeamForInvite === team._id ? inviteeUsername : ""
-              }
-              onChange={(e) => {
-                setSelectedTeamForInvite(team._id);
-                setInviteeUsername(e.target.value);
-              }}
-              placeholder="Invite user..."
-              className="h-8"
-            />
+      {teams.map((team) =>
+        team ? (
+          <div key={team._id} className="mb-4">
+            <h3 className="font-bold">{team.name}</h3>
+            <TeamMember team={team} />
+            <ul>
+              {teamLists
+                .filter((list) => list.teamId === team._id)
+                .map((list) => (
+                  <li
+                    key={list._id}
+                    className={`cursor-pointer p-2 rounded ${
+                      selectedListId === list._id
+                        ? "bg-muted/50 text-muted-foreground"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedListId(list._id);
+                      setListName(list.name);
+                    }}
+                  >
+                    {list.name}
+                  </li>
+                ))}
+            </ul>
             <Button
-              onClick={() => handleSendInvitation(team._id)}
+              variant="ghost"
               size="sm"
+              onClick={() => handleCreateList(team._id)}
               className="mt-1"
             >
-              Invite
+              + New Team List
             </Button>
+            <div className="mt-2">
+              <Input
+                value={
+                  selectedTeamForInvite === team._id ? inviteeUsername : ""
+                }
+                onChange={(e) => {
+                  setSelectedTeamForInvite(team._id);
+                  setInviteeUsername(e.target.value);
+                }}
+                placeholder="Invite user..."
+                className="h-8"
+              />
+              <Button
+                onClick={() => handleSendInvitation(team._id)}
+                size="sm"
+                className="mt-1"
+              >
+                Invite
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        ) : null,
+      )}
       <div className="mt-4 pt-4 border-t">
         <Input
           value={newTeamName}
