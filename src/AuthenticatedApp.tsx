@@ -4,7 +4,7 @@ import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
 import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronsLeft } from "lucide-react";
 import clsx from "clsx";
 
 import { api, type Id, type Doc } from "@/lib/convex";
