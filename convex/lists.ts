@@ -243,3 +243,33 @@ export const deleteItem = mutation({
   },
 });
 
+export const removeMemberFromTeam = mutation({
+  args: { teamId: v.id("teams"), memberId: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team || team.ownerId !== userId) {
+      throw new Error("Only team owners can remove members");
+    }
+
+    if (team.ownerId === args.memberId) {
+      throw new Error("Cannot remove the team owner");
+    }
+
+    const membership = await ctx.db
+      .query("team_members")
+      .withIndex("by_team_user", (q) =>
+        q.eq("teamId", args.teamId).eq("userId", args.memberId),
+      )
+      .first();
+
+    if (membership) {
+      await ctx.db.delete(membership._id);
+    }
+  },
+});
+

@@ -10,7 +10,7 @@ interface TeamMemberProps {
 
 export function TeamMember({ team }: TeamMemberProps) {
   const members = useQuery(api.teams.getTeamMembers, { teamId: team._id });
-  const removeMember = useMutation(api.teams.removeMemberFromTeam);
+  const removeMember = useMutation(api.lists.removeMemberFromTeam);
   const currentUser = useQuery(api.users.getMyUserProfile);
 
   const handleRemoveMember = (memberId: string) => {
