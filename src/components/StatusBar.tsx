@@ -1,5 +1,5 @@
 
-import type { Id } from "@/lib/convex";
+import type { Doc, Id } from "@/lib/convex";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {
@@ -17,17 +17,15 @@ import {
 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
+type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
+
 interface StatusBarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
   lists: Array<{
     id: Id<"lists">;
     name: string;
-    nodes: Array<{
-      uuid: Id<"items">;
-      text: string;
-      state: "red" | "yellow" | "green";
-    }>;
+    nodes: Array<ConvexItem>;
   }>;
   selectedListId: Id<"lists"> | null;
   listName: string;

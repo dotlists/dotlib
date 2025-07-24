@@ -1,6 +1,8 @@
 import { useConvexAuth } from "convex/react";
 import { SignIn } from "./components/auth/SignIn";
-import AuthenticatedApp from "./AuthenticatedApp";
+import React, { Suspense } from "react";
+
+const AuthenticatedApp = React.lazy(() => import("./AuthenticatedApp"));
 
 export default function App() {
   const { isAuthenticated } = useConvexAuth();
@@ -9,5 +11,9 @@ export default function App() {
     return <SignIn />;
   }
 
-  return <AuthenticatedApp />;
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+      <AuthenticatedApp />
+    </Suspense>
+  );
 }

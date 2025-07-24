@@ -253,6 +253,8 @@ export const createItemPublic = mutation({
     listId: v.id("lists"),
     text: v.string(),
     state: v.string(),
+    dueDate: v.optional(v.number()),
+    assigneeId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -267,6 +269,8 @@ export const createItemPublic = mutation({
       userId,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      dueDate: args.dueDate,
+      assigneeId: args.assigneeId,
     });
   },
 });
@@ -276,6 +280,8 @@ export const updateItem = mutation({
     id: v.id("items"),
     text: v.optional(v.string()),
     state: v.optional(v.string()),
+    dueDate: v.optional(v.number()),
+    assigneeId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -287,9 +293,9 @@ export const updateItem = mutation({
       throw new Error("Unauthorized");
     }
 
-    await ctx.db.patch(args.id, {
-      ...(args.text !== undefined && { text: args.text }),
-      ...(args.state !== undefined && { state: args.state }),
+    const { id, ...rest } = args;
+    await ctx.db.patch(id, {
+      ...rest,
       updatedAt: Date.now(),
     });
   },

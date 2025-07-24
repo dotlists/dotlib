@@ -33,6 +33,8 @@ const schema = defineSchema({
     userId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
+    dueDate: v.optional(v.number()),
+    assigneeId: v.optional(v.string()),
   })
     .index("by_list", ["listId"])
     .index("by_user", ["userId"]),

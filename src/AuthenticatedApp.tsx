@@ -10,11 +10,7 @@ import clsx from "clsx";
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
 
-type ConvexItem = {
-  uuid: Id<"items">;
-  text: string;
-  state: "red" | "yellow" | "green";
-};
+type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
 type ConvexList = Doc<"lists"> & {
   id: Id<"lists">;
@@ -43,7 +39,6 @@ export default function AuthenticatedApp() {
           list.nodes?.map((node) => ({
             ...node,
             uuid: node._id,
-            state: node.state as "red" | "yellow" | "green",
           })) ?? [],
       })) ?? [],
     [rawLists],
@@ -102,7 +97,7 @@ export default function AuthenticatedApp() {
 
   const handleUpdateItem = async (
     id: Id<"items">,
-    updates: { text?: string; state?: "red" | "yellow" | "green" },
+    updates: Partial<Doc<"items">>,
   ) => {
     await updateItem({ id, ...updates });
   };
