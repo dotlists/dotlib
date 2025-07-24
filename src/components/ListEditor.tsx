@@ -50,6 +50,7 @@ export function ListEditor({
             handleDeleteItem={handleDeleteItem}
             focusedItemId={focusedItemId}
             setFocusedItemId={setFocusedItemId}
+            listId={state.id}
           />
         ))}
         <motion.li

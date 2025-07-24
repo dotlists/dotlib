@@ -1,8 +1,21 @@
-// convex/lists.ts
-import { mutation, query, type QueryCtx, type MutationCtx } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+  type QueryCtx,
+  type MutationCtx,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { type Id } from "./_generated/dataModel";
+
+export const getList = internalQuery({
+  args: { listId: v.id("lists") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.listId);
+  },
+});
 
 //
 // FETCH ALL LISTS FOR A USER (Personal and Team)
@@ -104,7 +117,25 @@ export const getItems = query({
 //
 // CREATE A NEW LIST (Personal or for a Team)
 //
-export const createList = mutation({
+export const createList = internalMutation({
+  args: {
+    name: v.string(),
+    teamId: v.optional(v.id("teams")),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("lists", {
+      name: args.name,
+      userId: args.userId,
+      teamId: args.teamId,
+      order: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const createListPublic = mutation({
   args: { name: v.string(), teamId: v.optional(v.id("teams")) },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -156,7 +187,24 @@ export const updateList = mutation({
 //
 // DELETE A LIST + ITS ITEMS
 //
-export const deleteList = mutation({
+export const deleteList = internalMutation({
+  args: { id: v.id("lists") },
+  handler: async (ctx, args) => {
+    // remove items first
+    const items = await ctx.db
+      .query("items")
+      .withIndex("by_list", (q) => q.eq("listId", args.id))
+      .collect();
+    for (const item of items) {
+      await ctx.db.delete(item._id);
+    }
+
+    // then the list
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const deleteListPublic = mutation({
   args: { id: v.id("lists") },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -181,7 +229,26 @@ export const deleteList = mutation({
 //
 // CRUD FOR ITEMS
 //
-export const createItem = mutation({
+export const createItem = internalMutation({
+  args: {
+    listId: v.id("lists"),
+    text: v.string(),
+    state: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const item = await ctx.db.insert("items", {
+      listId: args.listId,
+      text: args.text,
+      state: args.state,
+      userId: "internal", // or some other indicator
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    return item;
+  },
+});
+
+export const createItemPublic = mutation({
   args: {
     listId: v.id("lists"),
     text: v.string(),
@@ -228,7 +295,14 @@ export const updateItem = mutation({
   },
 });
 
-export const deleteItem = mutation({
+export const deleteItem = internalMutation({
+  args: { id: v.id("items") },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const deleteItemPublic = mutation({
   args: { id: v.id("items") },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);

@@ -26,11 +26,11 @@ export default function AuthenticatedApp() {
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
 
-  const createList = useMutation(api.lists.createList);
+  const createList = useMutation(api.lists.createListPublic);
   const updateList = useMutation(api.lists.updateList);
-  const createItem = useMutation(api.lists.createItem);
+  const createItem = useMutation(api.lists.createItemPublic);
   const updateItem = useMutation(api.lists.updateItem);
-  const deleteItem = useMutation(api.lists.deleteItem);
+  const deleteItem = useMutation(api.lists.deleteItemPublic);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 

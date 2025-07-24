@@ -11,7 +11,10 @@ import {
 import { InvitationDropdown } from "./InvitationDropdown";
 import clsx from "clsx";
 
-import { ChevronDown, ChevronsRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronsRight,
+} from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 interface StatusBarProps {

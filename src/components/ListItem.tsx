@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import type { Id } from "@/lib/convex";
+import { useAction } from "convex/react";
+import { api } from "@/lib/convex";
+import { Sparkles } from "lucide-react";
 
 interface ListItemProps {
   node: {
@@ -17,6 +20,7 @@ interface ListItemProps {
   handleDeleteItem: (id: Id<"items">) => void;
   focusedItemId: Id<"items"> | null;
   setFocusedItemId: (id: Id<"items"> | null) => void;
+  listId: Id<"lists">;
 }
 
 const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
@@ -28,9 +32,19 @@ export function ListItem({
   handleDeleteItem,
   focusedItemId,
   setFocusedItemId,
+  listId,
 }: ListItemProps) {
   const [text, setText] = useState(node.text);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const breakdownTask = useAction(api.gemini.breakdownTask);
+
+  const handleBreakdownTask = () => {
+    breakdownTask({
+      listId,
+      taskId: node.uuid,
+      taskText: text,
+    });
+  };
 
   useEffect(() => {
     if (node.uuid === focusedItemId) {
@@ -112,6 +126,14 @@ export function ListItem({
           }
         }}
       />
+      <Button
+        onClick={handleBreakdownTask}
+        variant="ghost"
+        size="icon"
+        className="h-7 rounded-full cursor-pointer mr-3"
+      >
+        <Sparkles className="h-5 w-5" />
+      </Button>
       <Button
         onClick={() => handleDeleteItem(node.uuid)}
         variant="destructive"
