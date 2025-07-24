@@ -3,7 +3,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/lib/convex";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import type { Doc } from "convex/_generated/dataModel";
+import type { Doc } from "@/lib/convex";
 
 interface TeamManagerProps {
   teams: Doc<"teams">[];
