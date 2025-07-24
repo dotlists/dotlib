@@ -22,7 +22,8 @@ type ConvexList = Doc<"lists"> & {
 export default function AuthenticatedApp() {
   const userProfile = useQuery(api.users.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
-  const teams = useQuery(api.teams.getTeams)?.filter(Boolean) ?? [];
+  const teamsQuery = useQuery(api.teams.getTeams);
+  const teams = useMemo(() => teamsQuery?.filter(Boolean) ?? [], [teamsQuery]);
 
   const createList = useMutation(api.lists.createList);
   const updateList = useMutation(api.lists.updateList);
