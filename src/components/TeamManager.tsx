@@ -4,6 +4,7 @@ import { api } from "@/lib/convex";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import type { Doc } from "@/lib/convex";
+import { TeamMember } from "./TeamMember";
 
 interface TeamManagerProps {
   teams: Doc<"teams">[];
@@ -58,6 +59,7 @@ export function TeamManager({
       {teams.map((team) => (
         <div key={team._id} className="mb-4">
           <h3 className="font-bold">{team.name}</h3>
+          <TeamMember team={team} />
           <ul>
             {teamLists
               .filter((list) => list.teamId === team._id)
@@ -122,3 +124,4 @@ export function TeamManager({
     </div>
   );
 }
+

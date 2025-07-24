@@ -163,3 +163,26 @@ export const getTeams = query({
     return teams.filter(Boolean);
   },
 });
+
+export const getTeamMembers = query({
+  args: { teamId: v.id("teams") },
+  handler: async (ctx, args) => {
+    const members = await ctx.db
+      .query("team_members")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .collect();
+
+    return Promise.all(
+      members.map(async (member) => {
+        const userProfile = await ctx.db
+          .query("user_profiles")
+          .withIndex("by_userId", (q) => q.eq("userId", member.userId))
+          .first();
+        return {
+          ...member,
+          username: userProfile?.username ?? "Unknown User",
+        };
+      }),
+    );
+  },
+});
