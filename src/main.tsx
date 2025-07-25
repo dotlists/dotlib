@@ -5,7 +5,15 @@ import App from "./App.tsx";
 import { ConvexReactClient } from "convex/react";
 import "./global.css";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convexURL = import.meta.env.VITE_CONVEX_URL;
+
+if (!convexURL) {
+  throw new Error(
+    "VITE_CONVEX_URL is not set. Make sure to set it in your .env.local file or in your hosting provider's environment variables.",
+  );
+}
+
+const convex = new ConvexReactClient(convexURL);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
