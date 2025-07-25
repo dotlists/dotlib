@@ -14,9 +14,12 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as auth from "../auth.js";
+import type * as comments from "../comments.js";
+import type * as gantt from "../gantt.js";
 import type * as gemini from "../gemini.js";
 import type * as http from "../http.js";
 import type * as lists from "../lists.js";
+import type * as notifications from "../notifications.js";
 import type * as teams from "../teams.js";
 import type * as users from "../users.js";
 
@@ -30,9 +33,12 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  comments: typeof comments;
+  gantt: typeof gantt;
   gemini: typeof gemini;
   http: typeof http;
   lists: typeof lists;
+  notifications: typeof notifications;
   teams: typeof teams;
   users: typeof users;
 }>;

@@ -4,6 +4,7 @@ import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
 import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
+import { GanttView } from "./components/GanttView";
 import { ChevronsLeft } from "lucide-react";
 import clsx from "clsx";
 
@@ -16,6 +17,8 @@ type ConvexList = Doc<"lists"> & {
   id: Id<"lists">;
   nodes: ConvexItem[];
 };
+
+type ViewMode = "list" | "gantt";
 
 export default function AuthenticatedApp() {
   const userProfile = useQuery(api.users.getMyUserProfile);
@@ -30,6 +33,7 @@ export default function AuthenticatedApp() {
 
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   const lists: ConvexList[] = useMemo(
     () =>
@@ -118,7 +122,7 @@ export default function AuthenticatedApp() {
     );
   }
 
-  const validTeams = teams.filter(Boolean);
+  const validTeams = teams?.filter(Boolean) as (Doc<"teams"> & { role: string })[] | undefined;
 
   const sidebarContent = (
     <>
@@ -151,17 +155,19 @@ export default function AuthenticatedApp() {
         + New Personal List
       </Button>
       <hr className="my-4" />
-      <TeamManager
-        teams={validTeams}
-        teamLists={teamLists}
-        handleCreateList={handleCreateList}
-        setSelectedListId={(id) => {
-          setSelectedListId(id);
-          setIsMobileDrawerOpen(false);
-        }}
-        setListName={setListName}
-        selectedListId={selectedListId}
-      />
+      {validTeams && (
+        <TeamManager
+          teams={validTeams}
+          teamLists={teamLists}
+          handleCreateList={handleCreateList}
+          setSelectedListId={(id) => {
+            setSelectedListId(id);
+            setIsMobileDrawerOpen(false);
+          }}
+          setListName={setListName}
+          selectedListId={selectedListId}
+        />
+      )}
     </>
   );
 
@@ -219,9 +225,11 @@ export default function AuthenticatedApp() {
           listName={listName}
           setListName={setListName}
           handleListNameChange={handleListNameChange}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
         />
         <div className="flex-grow overflow-y-auto px-4 mt-16">
-          {selectedList && (
+          {selectedList && viewMode === "list" && (
             <ListEditor
               state={selectedList}
               handleUpdateItem={handleUpdateItem}
@@ -230,6 +238,9 @@ export default function AuthenticatedApp() {
               focusedItemId={focusedItemId}
               setFocusedItemId={setFocusedItemId}
             />
+          )}
+          {selectedListId && viewMode === "gantt" && (
+            <GanttView listId={selectedListId} />
           )}
         </div>
       </div>

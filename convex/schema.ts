@@ -33,6 +33,7 @@ const schema = defineSchema({
     userId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
+    startDate: v.optional(v.number()),
     dueDate: v.optional(v.number()),
     assigneeId: v.optional(v.string()),
   })
@@ -52,6 +53,19 @@ const schema = defineSchema({
   })
     .index("by_invitee", ["inviteeId"])
     .index("by_team_invitee", ["teamId", "inviteeId"]),
+  comments: defineTable({
+    itemId: v.id("items"),
+    userId: v.string(),
+    text: v.string(),
+  }).index("by_item", ["itemId"]),
+  notifications: defineTable({
+    recipientId: v.string(),
+    actorId: v.string(),
+    type: v.string(), // "assignment", "comment", "invitation"
+    itemId: v.optional(v.id("items")),
+    teamId: v.optional(v.id("teams")),
+    read: v.boolean(),
+  }).index("by_recipient", ["recipientId"]),
 });
 
 export default schema;
