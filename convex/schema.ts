@@ -66,6 +66,11 @@ const schema = defineSchema({
     teamId: v.optional(v.id("teams")),
     read: v.boolean(),
   }).index("by_recipient", ["recipientId"]),
+  webhooks: defineTable({
+    name: v.string(),
+    url: v.string(),
+    event: v.string(),
+  }).index("by_event", ["event"]),
 });
 
 export default schema;

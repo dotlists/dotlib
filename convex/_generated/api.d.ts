@@ -19,9 +19,9 @@ import type * as gantt from "../gantt.js";
 import type * as gemini from "../gemini.js";
 import type * as http from "../http.js";
 import type * as lists from "../lists.js";
+import type * as main from "../main.js";
 import type * as notifications from "../notifications.js";
 import type * as teams from "../teams.js";
-import type * as users from "../users.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -38,9 +38,9 @@ declare const fullApi: ApiFromModules<{
   gemini: typeof gemini;
   http: typeof http;
   lists: typeof lists;
+  main: typeof main;
   notifications: typeof notifications;
   teams: typeof teams;
-  users: typeof users;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
