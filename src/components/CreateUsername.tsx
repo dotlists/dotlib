@@ -7,8 +7,8 @@ import { Input } from "./ui/input";
 
 export function CreateUsername() {
   const [username, setUsername] = useState("");
+  const createProfile = useMutation(api.main.createUserProfile);
   const [error, setError] = useState("");
-  const createProfile = useMutation(api.users.createUserProfile);
 
   const handleCreateProfile = async () => {
     setError("");

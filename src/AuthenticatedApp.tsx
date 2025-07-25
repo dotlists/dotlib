@@ -21,7 +21,7 @@ type ConvexList = Doc<"lists"> & {
 type ViewMode = "list" | "gantt";
 
 export default function AuthenticatedApp() {
-  const userProfile = useQuery(api.users.getMyUserProfile);
+  const userProfile = useQuery(api.main.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
 

@@ -4,7 +4,7 @@ import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import "./lists";
 import "./teams";
-import "./users";
+import "./main"; // Import the new consolidated file
 
 const http = httpRouter();
 auth.addHttpRoutes(http);
@@ -19,7 +19,6 @@ const requireDevApiKey = (handler: (ctx: any, request: Request) => Promise<Respo
   });
 };
 
-// This is a placeholder to ensure the file is not empty.
 http.route({
   path: "/health",
   method: "GET",
@@ -39,7 +38,7 @@ http.route({
       return new Response("Missing `username` parameter", { status: 400 });
     }
 
-    const user = await ctx.runQuery(api.users.findUserByUsername, {
+    const user = await ctx.runQuery(api.main.findUserByUsername, {
       username: username,
     });
 
@@ -50,10 +49,21 @@ http.route({
     const sanitized = {
       username: user.username,
       userId: user.userId,
-      // Add more fields if your schema supports them
     };
 
     return new Response(JSON.stringify(sanitized), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+http.route({
+  path: "/users",
+  method: "GET",
+  handler: requireDevApiKey(async (ctx) => {
+    const userCount = await ctx.runQuery(api.main.getUserCount);
+    return new Response(JSON.stringify({ totalUsers: userCount }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
