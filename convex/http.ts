@@ -2,7 +2,6 @@ import { httpRouter } from "convex/server";
 import { auth } from "./auth";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
-import { findUserByUsername } from "./users";
 import "./lists";
 import "./teams";
 import "./users";
