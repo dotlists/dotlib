@@ -7,8 +7,9 @@ import "./teams";
 import "./users";
 
 const http = httpRouter();
-
 auth.addHttpRoutes(http);
+
+
 
 // This is a placeholder to ensure the file is not empty.
 http.route({
@@ -23,6 +24,18 @@ http.route({
   path: "/user",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
+    const authHeader = request.headers.get("authorization");
+    const expectedKey = process.env.DEV_API_KEY;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response("Missing or malformed Authorization header", { status: 401 });
+    }
+
+    const token = authHeader.substring("Bearer ".length).trim();
+    if (token !== expectedKey) {
+      return new Response("Invalid API key", { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const username = searchParams.get("username");
 
