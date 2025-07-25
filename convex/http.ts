@@ -9,7 +9,15 @@ import "./users";
 const http = httpRouter();
 auth.addHttpRoutes(http);
 
-
+const requireDevApiKey = (handler: (ctx: any, request: Request) => Promise<Response>) => {
+  return httpAction(async (ctx, request) => {
+    const apiKey = request.headers.get("X-API-KEY");
+    if (apiKey !== process.env.DEV_API_KEY) {
+      return new Response("Invalid API Key", { status: 401 });
+    }
+    return handler(ctx, request);
+  });
+};
 
 // This is a placeholder to ensure the file is not empty.
 http.route({
@@ -23,19 +31,7 @@ http.route({
 http.route({
   path: "/user",
   method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    const authHeader = request.headers.get("authorization");
-    const expectedKey = process.env.DEV_API_KEY;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response("Missing or malformed Authorization header", { status: 401 });
-    }
-
-    const token = authHeader.substring("Bearer ".length).trim();
-    if (token !== expectedKey) {
-      return new Response("Invalid API key", { status: 403 });
-    }
-
+  handler: requireDevApiKey(async (ctx, request) => {
     const { searchParams } = new URL(request.url);
     const username = searchParams.get("username");
 
@@ -43,7 +39,9 @@ http.route({
       return new Response("Missing `username` parameter", { status: 400 });
     }
 
-    const user = await ctx.runQuery(api.users.findUserByUsername, { username: username });
+    const user = await ctx.runQuery(api.users.findUserByUsername, {
+      username: username,
+    });
 
     if (!user) {
       return new Response("User not found", { status: 404 });
@@ -51,7 +49,7 @@ http.route({
 
     const sanitized = {
       username: user.username,
-      userId: user.userId
+      userId: user.userId,
       // Add more fields if your schema supports them
     };
 
