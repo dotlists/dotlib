@@ -7,8 +7,12 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Notifications } from "./Notifications";
+import { Settings } from "./Settings";
+import { useSettings } from "@/contexts/SettingsContext";
 import clsx from "clsx";
 
 import {
@@ -17,6 +21,7 @@ import {
   Menu,
   List,
   BarChart3,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
@@ -33,9 +38,11 @@ interface StatusBarProps {
     nodes: Array<ConvexItem>;
   }>;
   selectedListId: Id<"lists"> | null;
+  setSelectedListId: (id: Id<"lists">) => void;
   listName: string;
   setListName: (name: string) => void;
   handleListNameChange: (name: string) => void;
+  handleCreateList: () => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
 }
@@ -46,13 +53,16 @@ export function StatusBar({
   setIsMobileDrawerOpen,
   lists,
   selectedListId,
+  setSelectedListId,
   listName,
   setListName,
   handleListNameChange,
+  handleCreateList,
   viewMode,
   setViewMode,
 }: StatusBarProps) {
   const { signOut } = useAuthActions();
+  const { isSimpleMode } = useSettings();
   const selectedList = lists.find((list) => list.id === selectedListId);
 
   if (!selectedList) {
@@ -80,23 +90,27 @@ export function StatusBar({
     <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
       <div className="rounded-b-2xl rounded-t-lg border-3">
         <div className="flex px-3 py-1 items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMobileDrawerOpen(true)}
-            className="mr-2 md:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          {!isDesktopSidebarOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsDesktopSidebarOpen(true)}
-              className="mr-2 hidden md:block"
-            >
-              <ChevronsRight className="h-5 w-5" />
-            </Button>
+          {!isSimpleMode && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileDrawerOpen(true)}
+                className="mr-2 md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              {!isDesktopSidebarOpen && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsDesktopSidebarOpen(true)}
+                  className="mr-2 hidden md:block"
+                >
+                  <ChevronsRight className="h-5 w-5" />
+                </Button>
+              )}
+            </>
           )}
           <Input
             id="list-name-input"
@@ -111,22 +125,36 @@ export function StatusBar({
             autoComplete="off"
           />
           <div className="flex items-center">
-            <Button
-              variant={viewMode === "list" ? "secondary" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("list")}
-            >
-              <List className="h-5 w-5" />
-            </Button>
-            <Button
-              variant={viewMode === "gantt" ? "secondary" : "ghost"}
-              size="icon"
-              onClick={() => setViewMode("gantt")}
-            >
-              <BarChart3 className="h-5 w-5" />
-            </Button>
+            {!isSimpleMode && (
+              <>
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant={viewMode === "gantt" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => setViewMode("gantt")}
+                >
+                  <BarChart3 className="h-5 w-5" />
+                </Button>
+              </>
+            )}
           </div>
           <Notifications />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <SettingsIcon className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <Settings />
+            </PopoverContent>
+          </Popover>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -139,6 +167,26 @@ export function StatusBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-white p-3 rounded-lg">
+              {isSimpleMode && (
+                <>
+                  {lists.map((list) => (
+                    <DropdownMenuItem
+                      key={list.id}
+                      onClick={() => {
+                        setSelectedListId(list.id);
+                        setListName(list.name);
+                      }}
+                    >
+                      {list.name}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleCreateList}>
+                    Create New List
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem key="log-out" onClick={signOut}>
                 log out
               </DropdownMenuItem>

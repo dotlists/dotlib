@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import { ConvexReactClient } from "convex/react";
+import { SettingsProvider } from "./contexts/SettingsContext.tsx";
 import "./global.css";
 
 const convexURL = import.meta.env.VITE_CONVEX_URL;
@@ -18,7 +19,9 @@ const convex = new ConvexReactClient(convexURL);
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ConvexAuthProvider client={convex}>
-      <App />
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
     </ConvexAuthProvider>
   </React.StrictMode>,
 );

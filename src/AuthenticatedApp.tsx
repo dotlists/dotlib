@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
@@ -7,6 +7,7 @@ import { CreateUsername } from "./components/CreateUsername";
 import { GanttView } from "./components/GanttView";
 import { ChevronsLeft } from "lucide-react";
 import clsx from "clsx";
+import { useSettings } from "./contexts/SettingsContext";
 
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
@@ -21,6 +22,7 @@ type ConvexList = Doc<"lists"> & {
 type ViewMode = "list" | "gantt";
 
 export default function AuthenticatedApp() {
+  const { isSimpleMode } = useSettings();
   const userProfile = useQuery(api.main.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
@@ -31,7 +33,7 @@ export default function AuthenticatedApp() {
   const updateItem = useMutation(api.lists.updateItem);
   const deleteItem = useMutation(api.lists.deleteItemPublic);
 
-  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(!isSimpleMode);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -62,6 +64,35 @@ export default function AuthenticatedApp() {
     (list: ConvexList) => list.id === selectedListId,
   );
 
+  const handleListNameChange = (name: string) => {
+    if (selectedListId && name) {
+      updateList({ id: selectedListId, name });
+    }
+  };
+
+  const handleCreateList = useCallback(async (teamId?: Id<"teams">) => {
+    const result = await createList({ name: "New List", teamId });
+    if (result) {
+      setSelectedListId(result);
+      setListName("New List");
+      setIsMobileDrawerOpen(false);
+    }
+  }, [createList]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === "L") {
+        event.preventDefault();
+        handleCreateList();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleCreateList]);
+
   useEffect(() => {
     if (lists.length > 0 && (!selectedListId || !lists.some(list => list.id === selectedListId))) {
       setSelectedListId(lists[0].id);
@@ -69,22 +100,7 @@ export default function AuthenticatedApp() {
     }
   }, [lists, selectedListId]);
 
-  const handleListNameChange = (name: string) => {
-    if (selectedListId && name) {
-      updateList({ id: selectedListId, name });
-    }
-  };
-
-  const handleCreateList = async (teamId?: Id<"teams">) => {
-    const result = await createList({ name: "New List", teamId });
-    if (result) {
-      setSelectedListId(result);
-      setListName("New List");
-      setIsMobileDrawerOpen(false);
-    }
-  };
-
-  const handleAddItem = async (
+  const handleAddItem = useCallback(async (
     text: string,
     state: "red" | "yellow" | "green" = "red",
   ) => {
@@ -92,7 +108,25 @@ export default function AuthenticatedApp() {
       const newItemId = await createItem({ listId: selectedListId, text, state });
       setFocusedItemId(newItemId);
     }
-  };
+  }, [createItem, selectedListId]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === "L") {
+        event.preventDefault();
+        handleCreateList();
+      }
+      if (event.ctrlKey && event.shiftKey && event.key === "N") {
+        event.preventDefault();
+        handleAddItem("New Task");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleCreateList, handleAddItem]);
 
   const handleUpdateItem = async (
     id: Id<"items">,
@@ -152,21 +186,25 @@ export default function AuthenticatedApp() {
         ))}
       </ul>
       <Button variant="ghost" size="sm" onClick={() => handleCreateList()} className="mt-1">
-        + New Personal List
+        + New Personal List <span className="ml-2 text-xs text-muted-foreground">(Ctrl+Shift+L)</span>
       </Button>
-      <hr className="my-4" />
-      {validTeams && (
-        <TeamManager
-          teams={validTeams}
-          teamLists={teamLists}
-          handleCreateList={handleCreateList}
-          setSelectedListId={(id) => {
-            setSelectedListId(id);
-            setIsMobileDrawerOpen(false);
-          }}
-          setListName={setListName}
-          selectedListId={selectedListId}
-        />
+      {!isSimpleMode && (
+        <>
+          <hr className="my-4" />
+          {validTeams && (
+            <TeamManager
+              teams={validTeams}
+              teamLists={teamLists}
+              handleCreateList={handleCreateList}
+              setSelectedListId={(id) => {
+                setSelectedListId(id);
+                setIsMobileDrawerOpen(false);
+              }}
+              setListName={setListName}
+              selectedListId={selectedListId}
+            />
+          )}
+        </>
       )}
     </>
   );
@@ -222,14 +260,16 @@ export default function AuthenticatedApp() {
           setIsMobileDrawerOpen={setIsMobileDrawerOpen}
           lists={lists}
           selectedListId={selectedListId}
+          setSelectedListId={setSelectedListId}
           listName={listName}
           setListName={setListName}
           handleListNameChange={handleListNameChange}
+          handleCreateList={() => handleCreateList()}
           viewMode={viewMode}
           setViewMode={setViewMode}
         />
         <div className="flex-grow overflow-y-auto px-4 mt-16">
-          {selectedList && viewMode === "list" && (
+          {selectedList && (viewMode === "list" || isSimpleMode) && (
             <ListEditor
               state={selectedList}
               handleUpdateItem={handleUpdateItem}
@@ -239,7 +279,7 @@ export default function AuthenticatedApp() {
               setFocusedItemId={setFocusedItemId}
             />
           )}
-          {selectedListId && viewMode === "gantt" && (
+          {selectedListId && viewMode === "gantt" && !isSimpleMode && (
             <GanttView listId={selectedListId} />
           )}
         </div>

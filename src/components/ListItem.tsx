@@ -19,10 +19,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "./ui/dropdown-menu";
 import { format } from "date-fns";
 import clsx from "clsx";
 import { CommentSection } from "./CommentSection";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface ListItemProps {
   node: Doc<"items"> & { uuid: Id<"items"> };
@@ -49,6 +53,7 @@ export function ListItem({
   listId,
   teamId,
 }: ListItemProps) {
+  const { isSimpleMode } = useSettings();
   const [text, setText] = useState(node.text);
   const [isCommenting, setIsCommenting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -107,7 +112,7 @@ export function ListItem({
       key={node.uuid}
       id={node.uuid}
     >
-      <div className="flex">
+      <div className="flex items-center">
         <div
           onClick={() => {
             const currentState = node.state as keyof typeof stateOrder;
@@ -125,7 +130,7 @@ export function ListItem({
             });
           }}
           className={clsx(
-            "w-6 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs",
+            "w-6 h-6 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs flex-shrink-0",
             colorClass,
           )}
         ></div>
@@ -155,87 +160,12 @@ export function ListItem({
             }
           }}
         />
-        {/* Desktop Hover Actions */}
-        <div className="hidden md:flex items-center self-center transition-opacity">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setIsCommenting(!isCommenting)}
-          >
-            <MessageSquare className="h-4 w-4" />
-          </Button>
-          {teamId && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  {assignee ? (
-                    <span className="text-xs">{assignee.username.slice(0, 2)}</span>
-                  ) : (
-                    <User className="h-4 w-4" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}
-                >
-                  Unassigned
-                </DropdownMenuItem>
-                {teamMembers?.map((member) => (
-                  <DropdownMenuItem
-                    key={member.userId}
-                    onSelect={() =>
-                      handleUpdateItem(node.uuid, { assigneeId: member.userId })
-                    }
-                  >
-                    {member.username}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <CalendarIcon className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <DayPicker
-                mode="single"
-                selected={node.dueDate ? new Date(node.dueDate) : undefined}
-                onSelect={(date) =>
-                  handleUpdateItem(node.uuid, { dueDate: date?.getTime() })
-                }
-              />
-            </PopoverContent>
-          </Popover>
+        <div className="flex items-center self-center">
           {node.dueDate && (
-            <span className="text-xs text-gray-500 mr-2">
+            <span className="text-xs text-gray-500 mr-2 whitespace-nowrap">
               {format(new Date(node.dueDate), "MMM d")}
             </span>
           )}
-          <Button
-            onClick={handleBreakdownTask}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-          >
-            <Sparkles className="h-4 w-4" />
-          </Button>
-          <Button
-            onClick={() => handleDeleteItem(node.uuid)}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Mobile Kebab Menu */}
-        <div className="md:hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -247,16 +177,14 @@ export function ListItem({
                 <MessageSquare className="mr-2 h-4 w-4" />
                 {isCommenting ? "Hide Comments" : "Show Comments"}
               </DropdownMenuItem>
-              {teamId && (
-                <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <User className="mr-2 h-4 w-4" />
-                        {assignee ? `Assign: ${assignee.username}` : "Assign"}
-                      </DropdownMenuItem>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+              
+              {!isSimpleMode && teamId && (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <User className="mr-2 h-4 w-4" />
+                    {assignee ? `Assign: ${assignee.username}` : "Assign"}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
                       <DropdownMenuItem onSelect={() => handleUpdateItem(node.uuid, { assigneeId: undefined })}>
                         Unassigned
                       </DropdownMenuItem>
@@ -268,10 +196,10 @@ export function ListItem({
                           {member.username}
                         </DropdownMenuItem>
                       ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
+                    </DropdownMenuSubContent>
+                </DropdownMenuSub>
               )}
+
               <Popover>
                 <PopoverTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -289,11 +217,18 @@ export function ListItem({
                   />
                 </PopoverContent>
               </Popover>
+              
+              {!isSimpleMode && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleBreakdownTask}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Breakdown Task
+                  </DropdownMenuItem>
+                </>
+              )}
+              
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleBreakdownTask}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Breakdown Task
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDeleteItem(node.uuid)} className="text-red-600">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete

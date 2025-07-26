@@ -67,7 +67,7 @@ export function ListEditor({
             variant="outline"
             className="px-8"
           >
-            Add new task
+            Add new task <span className="ml-2 text-xs text-muted-foreground">(Ctrl+Shift+N)</span>
           </Button>
         </motion.li>
       </AnimatePresence>
