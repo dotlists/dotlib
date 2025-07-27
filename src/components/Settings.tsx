@@ -6,6 +6,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { useSettings } from "@/contexts/SettingsContext";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import { api } from "@/lib/convex";
+import { useMutation, useQuery } from "convex/react";
 
 const THEMES = ["light", "dark", "gruvbox", "blue", "monochrome"];
 
@@ -16,6 +18,8 @@ interface SettingsProps {
 export function Settings({ onClose }: SettingsProps) {
   const { theme, setTheme } = useTheme();
   const { isSimpleMode, setIsSimpleMode } = useSettings();
+  const generateAuthKey = useMutation(api.auth.generateAuthKey);
+  const getAuthKey = useQuery(api.auth.getAuthKey);
 
   // This is the modal content. Clicks inside this div will be stopped.
   const modalContent = (
@@ -66,6 +70,22 @@ export function Settings({ onClose }: SettingsProps) {
               onCheckedChange={setIsSimpleMode}
             />
             <Label htmlFor="simple-mode">enable simple mode</Label>
+          </div>
+        </div>
+        <div>
+          <h3 className="text-lg font-medium">authentication key</h3>
+          <p className="text-sm text-muted-foreground">
+            generate a temporary key to authenticate external applications.
+          </p>
+          <div className="flex items-center space-x-2 mt-2">
+            <Button
+              key="generate-auth"
+              variant="outline"
+              onClick={() => generateAuthKey()}
+            >
+              generate key
+            </Button>
+            <Label htmlFor="generate-auth">{getAuthKey === undefined ? "" : getAuthKey}</Label>
           </div>
         </div>
       </div>
