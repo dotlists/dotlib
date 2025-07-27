@@ -42,6 +42,7 @@ const schema = defineSchema({
   subtasks: defineTable({
     parentId: v.id("items"),
     text: v.string(),
+    b64text: v.optional(v.string()),
     state: v.string(),
     userId: v.string(),
     createdAt: v.number(),
