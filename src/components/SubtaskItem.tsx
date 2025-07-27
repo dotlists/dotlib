@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import type { Doc, Id } from "@/lib/convex";
+import type { Doc } from "@/lib/convex";
 import { useMutation } from "convex/react";
 import { api } from "@/lib/convex";
 import { Trash2 } from "lucide-react";

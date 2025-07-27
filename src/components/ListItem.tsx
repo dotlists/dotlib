@@ -55,9 +55,6 @@ interface ListItemProps {
 const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
 const stateOrderReversed = ["red", "yellow", "green"] as const;
 
-const subtaskStateOrder = { todo: 0, "in progress": 1, done: 2 } as const;
-const subtaskStateOrderReversed = ["todo", "in progress", "done"] as const;
-
 export function ListItem({
   node,
   handleUpdateItem,
