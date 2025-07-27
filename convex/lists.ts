@@ -59,19 +59,29 @@ export const getLists = query({
           .query("items")
           .withIndex("by_list", (q) => q.eq("listId", list._id))
           .collect();
-
-        const decodedItems = items.map((item) => ({
-          ...item,
-          text: item.b64text ? atob(item.b64text) : item.b64text,
-        }));
-
-        return { ...list, nodes: decodedItems };
+        return { ...list, nodes: items };
       }),
     );
 
     return listsWithItems.sort((a, b) => a.name.localeCompare(b.name));
   },
 });
+
+export const b64Encode = mutation({
+  handler: async (ctx) => {
+    const items = await ctx.db.query("items").collect();
+
+    for (const item of items) {
+      if (typeof item.text === "string") {
+        const b64text = btoa(item.text);
+        await ctx.db.patch(item._id, { b64text });
+      }
+    }
+
+    return { updated: items.length };
+  },
+});
+
 
 // Helper function to check if a user has access to a list
 export const hasAccessToList = async (
@@ -114,7 +124,7 @@ export const getItems = query({
       .collect();
     return items.map((item) => ({
       uuid: item._id,
-      text: atob(item.b64text),
+      text: item.text,
       state: item.state,
     }));
   },
@@ -263,7 +273,7 @@ export const createItem = internalMutation({
   handler: async (ctx, args) => {
     const item = await ctx.db.insert("items", {
       listId: args.listId,
-      b64text: btoa(args.text),
+      text: args.text,
       state: args.state,
       userId: "internal", // or some other indicator
       createdAt: Date.now(),
@@ -290,7 +300,7 @@ export const createItemPublic = mutation({
 
     return await ctx.db.insert("items", {
       listId: args.listId,
-      b64text: btoa(args.text),
+      text: args.text,
       state: args.state,
       userId,
       createdAt: Date.now(),
