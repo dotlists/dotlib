@@ -112,10 +112,7 @@ export const getItems = query({
       .query("items")
       .filter((q) => q.eq(q.field("listId"), args.listId))
       .collect();
-    return items.map((item) => (
-      console.log(item.b64text),
-      console.log(atob(item.b64text)), 
-      {
+    return items.map((item) => ({
       uuid: item._id,
       text: atob(item.b64text),
       state: item.state,
@@ -335,11 +332,20 @@ export const updateItem = mutation({
       });
     }
 
-    const { id, ...rest } = args;
-    await ctx.db.patch(id, {
+    const { id, text, ...rest } = args;
+    const encodedText = text == undefined ? undefined : atob(text);
+
+    // Build the patch object conditionally
+    const patchData: Record<string, any> = {
       ...rest,
       updatedAt: Date.now(),
-    });
+    };
+
+    if (encodedText !== undefined) {
+      patchData.b64text = encodedText;
+    }
+
+    await ctx.db.patch(id, patchData);
   },
 });
 
@@ -364,6 +370,3 @@ export const deleteItemPublic = mutation({
     await ctx.db.delete(args.id);
   },
 });
-
-
-
