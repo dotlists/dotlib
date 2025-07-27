@@ -264,8 +264,6 @@ export const createItem = internalMutation({
     state: v.string(),
   },
   handler: async (ctx, args) => {
-    console.log(args.text);
-    console.log(btoa(args.text));
     const item = await ctx.db.insert("items", {
       listId: args.listId,
       b64text: btoa(args.text),
@@ -293,8 +291,6 @@ export const createItemPublic = mutation({
       throw new Error("Unauthorized");
     }
 
-    console.log(args.text);
-    console.log(btoa(args.text));
     return await ctx.db.insert("items", {
       listId: args.listId,
       b64text: btoa(args.text),
@@ -339,11 +335,8 @@ export const updateItem = mutation({
       });
     }
 
-    const { id, text, ...rest } = args;
-    const encodedText = text == undefined ? undefined : btoa(text);
-
-    // Build the patch object conditionally
-    const patchData: Record<string, any> = {
+    const { id, ...rest } = args;
+    await ctx.db.patch(id, {
       ...rest,
       updatedAt: Date.now(),
     };
