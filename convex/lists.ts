@@ -339,13 +339,7 @@ export const updateItem = mutation({
     await ctx.db.patch(id, {
       ...rest,
       updatedAt: Date.now(),
-    };
-
-    if (encodedText !== undefined) {
-      patchData.b64text = encodedText;
-    }
-
-    await ctx.db.patch(id, patchData);
+    });
   },
 });
 
