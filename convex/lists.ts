@@ -73,6 +73,22 @@ export const getLists = query({
   },
 });
 
+export const b64Encode = mutation({
+  handler: async (ctx) => {
+    const items = await ctx.db.query("items").collect();
+
+    for (const item of items) {
+      if (typeof item.text === "string") {
+        const b64text = btoa(item.text);
+        await ctx.db.patch(item._id, { b64text });
+      }
+    }
+
+    return { updated: items.length };
+  },
+});
+
+
 // Helper function to check if a user has access to a list
 export const hasAccessToList = async (
   ctx: QueryCtx | MutationCtx,
