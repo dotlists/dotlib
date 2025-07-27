@@ -29,6 +29,7 @@ const schema = defineSchema({
   items: defineTable({
     listId: v.id("lists"),
     text: v.string(),
+    b64text: v.optional(v.string()),
     state: v.string(),
     userId: v.string(),
     createdAt: v.number(),
