@@ -59,7 +59,13 @@ export const getLists = query({
           .query("items")
           .withIndex("by_list", (q) => q.eq("listId", list._id))
           .collect();
-        return { ...list, nodes: items };
+
+        const decodedItems = items.map((item) => ({
+          ...item,
+          text: item.text ? atob(item.text) : item.text,
+        }));
+
+        return { ...list, nodes: decodedItems };
       }),
     );
 
@@ -106,9 +112,12 @@ export const getItems = query({
       .query("items")
       .filter((q) => q.eq(q.field("listId"), args.listId))
       .collect();
-    return items.map((item) => ({
+    return items.map((item) => (
+      console.log(item.text),
+      console.log(atob(item.text)), 
+      {
       uuid: item._id,
-      text: item.text,
+      text: atob(item.text),
       state: item.state,
     }));
   },
@@ -255,9 +264,11 @@ export const createItem = internalMutation({
     state: v.string(),
   },
   handler: async (ctx, args) => {
+    console.log(args.text);
+    console.log(btoa(args.text));
     const item = await ctx.db.insert("items", {
       listId: args.listId,
-      text: args.text,
+      text: btoa(args.text),
       state: args.state,
       userId: "internal", // or some other indicator
       createdAt: Date.now(),
@@ -282,9 +293,11 @@ export const createItemPublic = mutation({
       throw new Error("Unauthorized");
     }
 
+    console.log(args.text);
+    console.log(btoa(args.text));
     return await ctx.db.insert("items", {
       listId: args.listId,
-      text: args.text,
+      text: btoa(args.text),
       state: args.state,
       userId,
       createdAt: Date.now(),
@@ -326,11 +339,20 @@ export const updateItem = mutation({
       });
     }
 
-    const { id, ...rest } = args;
-    await ctx.db.patch(id, {
+    const { id, text, ...rest } = args;
+    const encodedText = text == undefined ? undefined : btoa(text);
+
+    // Build the patch object conditionally
+    const patchData: Record<string, any> = {
       ...rest,
       updatedAt: Date.now(),
-    });
+    };
+
+    if (encodedText !== undefined) {
+      patchData.text = encodedText;
+    }
+
+    await ctx.db.patch(id, patchData);
   },
 });
 
