@@ -19,9 +19,9 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
   const createItem = useMutation(api.lists.createItemPublic);
 
   const debouncedUpdateRef = useRef(
-    debounce((taskId: Id<"items">, startDate: number, dueDate: number) => {
+    debounce((taskId: string, startDate: number, dueDate: number) => {
       updateItem({
-        id: taskId,
+        id: taskId as Id<"items">,
         startDate,
         dueDate,
       });
@@ -42,6 +42,7 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
           end: new Date(end.getTime() + timezoneOffset)
             .toISOString()
             .split("T")[0],
+          dependencies: "", // Add this line
         };
       });
 
@@ -62,24 +63,24 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
                 end.getTime(),
               );
             },
-            on_click: (_task: Gantt.Task) => {
+            on_click: () => {
               // This will be handled by the popup
             },
             custom_popup_html: (task: Gantt.Task) => {
               return `
                 <div class="p-2">
                   <h5>${task.name}</h5>
-                  <p>Starts: ${task.start}</p>
-                  <p>Ends: ${task.end}</p>
-                  <p>Progress: ${task.progress}%</p>
+                  <p>starts: ${task.start}</p>
+                  <p>ends: ${task.end}</p>
+                  <p>progress: ${task.progress}%</p>
                   <div class="flex gap-2 mt-2">
-                    <button class="bg-red-500 text-white px-2 py-1 rounded" data-action="delete" data-task-id="${task.id}">Delete</button>
-                    <button class="bg-blue-500 text-white px-2 py-1 rounded" data-action="edit" data-task-id="${task.id}">Set Due Date</button>
+                    <button class="bg-red-500 text-white px-2 py-1 rounded" data-action="delete" data-task-id="${task.id}">delete</button>
+                    <button class="bg-blue-500 text-white px-2 py-1 rounded" data-action="edit" data-task-id="${task.id}">set due date</button>
                   </div>
                 </div>
               `;
             },
-          } as any,
+          } as unknown as Gantt.Options,
         );
       } else {
         // Refresh tasks if chart already exists
@@ -100,13 +101,13 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
       const taskId = target.dataset.taskId as Id<"items">;
 
       if (action === "delete" && taskId) {
-        if (confirm("Are you sure you want to delete this task?")) {
+        if (confirm("are you sure you want to delete this task?")) {
           deleteItem({ id: taskId });
         }
       }
 
       if (action === "edit" && taskId) {
-        const newDueDate = prompt("Enter new due date (YYYY-MM-DD):");
+        const newDueDate = prompt("enter new due date (yyyy-mm-dd):");
         if (newDueDate) {
           updateItem({
             id: taskId,
@@ -138,7 +139,7 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
   };
 
   const handleAddTask = async () => {
-    const taskName = prompt("Enter new task name:");
+    const taskName = prompt("enter new task name:");
     if (taskName) {
       const today = new Date();
       const tomorrow = new Date();
@@ -157,9 +158,9 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
   return (
     <div className="p-4">
       <div className="flex justify-end gap-2 mb-4">
-        <Button onClick={handleAddTask}>Add Task</Button>
+        <Button onClick={handleAddTask}>add task</Button>
         <Button onClick={handleExport} variant="outline">
-          Export to PDF
+          export to pdf
         </Button>
       </div>
       <svg ref={ganttRef}></svg>

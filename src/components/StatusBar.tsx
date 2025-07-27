@@ -1,4 +1,5 @@
 
+
 import type { Doc, Id } from "@/lib/convex";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -9,9 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Notifications } from "./Notifications";
-import { Settings } from "./Settings";
 import { useSettings } from "@/contexts/SettingsContext";
 import clsx from "clsx";
 
@@ -45,6 +44,7 @@ interface StatusBarProps {
   handleCreateList: () => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  onSettingsClick: () => void;
 }
 
 export function StatusBar({
@@ -60,6 +60,7 @@ export function StatusBar({
   handleCreateList,
   viewMode,
   setViewMode,
+  onSettingsClick,
 }: StatusBarProps) {
   const { signOut } = useAuthActions();
   const { isSimpleMode } = useSettings();
@@ -70,7 +71,7 @@ export function StatusBar({
       <div className="w-full h-[10vh] p-3">
         <div className="rounded-b-2xl rounded-t-lg border-3">
           <div className="flex px-3 py-1 items-center">
-            <p className="text-lg text-muted-foreground">No list selected.</p>
+            <p className="text-lg text-muted-foreground">no list selected.</p>
           </div>
         </div>
       </div>
@@ -145,16 +146,9 @@ export function StatusBar({
             )}
           </div>
           <Notifications />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <SettingsIcon className="h-5 w-5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <Settings />
-            </PopoverContent>
-          </Popover>
+          <Button variant="ghost" size="icon" onClick={onSettingsClick}>
+            <SettingsIcon className="h-5 w-5" />
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -166,7 +160,7 @@ export function StatusBar({
                 <ChevronDown className="w-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white p-3 rounded-lg">
+            <DropdownMenuContent className="p-3 rounded-lg">
               {isSimpleMode && (
                 <>
                   {lists.map((list) => (
@@ -182,7 +176,7 @@ export function StatusBar({
                   ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleCreateList}>
-                    Create New List
+                    create new list
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
@@ -193,7 +187,7 @@ export function StatusBar({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex h-12 w-full">
+        <div className="flex h-12 w-full rounded-b-2xl overflow-hidden">
           <div
             className="transition-all duration-100"
             style={{
@@ -223,4 +217,5 @@ export function StatusBar({
     </div>
   );
 }
+
 

@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { auth } from "./auth";
-import { httpAction } from "./_generated/server";
+import { httpAction, type ActionCtx } from "./_generated/server";
 import { api } from "./_generated/api";
 import "./lists";
 import "./teams";
@@ -10,7 +10,7 @@ const http = httpRouter();
 
 auth.addHttpRoutes(http);
 
-const requireDevApiKey = (handler: (ctx: any, request: Request) => Promise<Response>) => {
+const requireDevApiKey = (handler: (ctx: ActionCtx, request: Request) => Promise<Response>) => {
   return httpAction(async (ctx, request) => {
     const apiKey = request.headers.get("X-API-KEY");
     if (apiKey !== process.env.DEV_API_KEY) {

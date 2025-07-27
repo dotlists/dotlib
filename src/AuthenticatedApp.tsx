@@ -5,9 +5,11 @@ import { ListEditor } from "./components/ListEditor";
 import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
 import { GanttView } from "./components/GanttView";
-import { ChevronsLeft } from "lucide-react";
+import { Settings } from "./components/Settings";
+import { ChevronsLeft, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { useSettings } from "./contexts/SettingsContext";
+import { AnimatePresence } from "framer-motion";
 
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
@@ -29,6 +31,7 @@ export default function AuthenticatedApp() {
 
   const createList = useMutation(api.lists.createListPublic);
   const updateList = useMutation(api.lists.updateList);
+  const deleteList = useMutation(api.lists.deleteListPublic);
   const createItem = useMutation(api.lists.createItemPublic);
   const updateItem = useMutation(api.lists.updateItem);
   const deleteItem = useMutation(api.lists.deleteItemPublic);
@@ -36,6 +39,7 @@ export default function AuthenticatedApp() {
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(!isSimpleMode);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const lists: ConvexList[] = useMemo(
     () =>
@@ -139,7 +143,25 @@ export default function AuthenticatedApp() {
     await deleteItem({ id });
   };
 
-  if (userProfile === undefined || rawLists === undefined || teams === undefined) {
+  const handleDeleteList = async (id: Id<"lists">) => {
+    await deleteList({ id });
+    if (selectedListId === id) {
+      const newSelectedList = lists.find((l) => l.id !== id);
+      if (newSelectedList) {
+        setSelectedListId(newSelectedList.id);
+        setListName(newSelectedList.name);
+      } else {
+        setSelectedListId(null);
+        setListName("");
+      }
+    }
+  };
+
+  if (
+    userProfile === undefined ||
+    rawLists === undefined ||
+    teams === undefined
+  ) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
@@ -150,8 +172,8 @@ export default function AuthenticatedApp() {
   if (lists.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-4xl font-bold mb-8">No lists yet!</h1>
-        <Button onClick={() => handleCreateList()}>Create a new list</Button>
+        <h1 className="text-4xl font-bold mb-8">no lists yet!</h1>
+        <Button onClick={() => handleCreateList()}>create a new list</Button>
       </div>
     );
   }
@@ -161,7 +183,7 @@ export default function AuthenticatedApp() {
   const sidebarContent = (
     <>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold font-heading">Personal Lists</h2>
+        <h2 className="text-xl font-bold font-heading">personal lists</h2>
         <Button
           variant="ghost"
           size="icon"
@@ -174,19 +196,34 @@ export default function AuthenticatedApp() {
         {personalLists.map((list) => (
           <li
             key={list.id}
-            className={`cursor-pointer p-2 rounded ${selectedListId === list.id ? "bg-muted/50 text-muted-foreground" : ""}`}
+            className={`flex items-center justify-between cursor-pointer p-2 rounded ${
+              selectedListId === list.id
+                ? "bg-muted/50 text-muted-foreground"
+                : ""
+            }`}
             onClick={() => {
               setSelectedListId(list.id);
               setListName(list.name);
               setIsMobileDrawerOpen(false);
             }}
           >
-            {list.name}
+            <span>{list.name}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteList(list.id);
+              }}
+              className="h-6 w-6"
+            >
+              <Trash2 className="h-4 w-4 text-red-500" />
+            </Button>
           </li>
         ))}
       </ul>
       <Button variant="ghost" size="sm" onClick={() => handleCreateList()} className="mt-1">
-        + New Personal List <span className="ml-2 text-xs text-muted-foreground">(Ctrl+Shift+L)</span>
+        + new personal list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span>
       </Button>
       {!isSimpleMode && (
         <>
@@ -196,6 +233,7 @@ export default function AuthenticatedApp() {
               teams={validTeams}
               teamLists={teamLists}
               handleCreateList={handleCreateList}
+              handleDeleteList={handleDeleteList}
               setSelectedListId={(id) => {
                 setSelectedListId(id);
                 setIsMobileDrawerOpen(false);
@@ -210,80 +248,96 @@ export default function AuthenticatedApp() {
   );
 
   return (
-    <main className="relative md:flex h-screen">
-      {/* Mobile Drawer */}
-      <div
-        className={clsx(
-          "fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden",
-          {
-            "opacity-100 pointer-events-auto": isMobileDrawerOpen,
-            "opacity-0 pointer-events-none": !isMobileDrawerOpen,
-          },
-        )}
-        onClick={() => setIsMobileDrawerOpen(false)}
-      />
-      <div
-        className={clsx(
-          "fixed top-0 left-0 h-full bg-background z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
-          {
-            "translate-x-0": isMobileDrawerOpen,
-            "-translate-x-full": !isMobileDrawerOpen,
-          },
-        )}
-      >
-        {sidebarContent}
-      </div>
-
-      {/* Desktop Sidebar */}
-      <div
-        className={clsx(
-          "hidden md:block border-r h-full overflow-y-auto transition-all duration-300",
-          {
-            "w-1/4 p-4": isDesktopSidebarOpen,
-            "w-0 p-0 border-0": !isDesktopSidebarOpen,
-          },
-        )}
-      >
-        {isDesktopSidebarOpen && sidebarContent}
-      </div>
-
-      {/* Main Content */}
-      <div
-        className={clsx("flex flex-col w-full h-full transition-all duration-300", {
-          "md:w-3/4": isDesktopSidebarOpen,
-          "md:w-full": !isDesktopSidebarOpen,
-        })}
-      >
-        <StatusBar
-          isDesktopSidebarOpen={isDesktopSidebarOpen}
-          setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
-          setIsMobileDrawerOpen={setIsMobileDrawerOpen}
-          lists={lists}
-          selectedListId={selectedListId}
-          setSelectedListId={setSelectedListId}
-          listName={listName}
-          setListName={setListName}
-          handleListNameChange={handleListNameChange}
-          handleCreateList={() => handleCreateList()}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
+    <>
+      <main className="relative md:flex h-screen">
+        {/* Mobile Drawer */}
+        <div
+          className={clsx(
+            "fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden",
+            {
+              "opacity-100 pointer-events-auto": isMobileDrawerOpen,
+              "opacity-0 pointer-events-none": !isMobileDrawerOpen,
+            },
+          )}
+          onClick={() => setIsMobileDrawerOpen(false)}
         />
-        <div className="flex-grow overflow-y-auto px-4 mt-16">
-          {selectedList && (viewMode === "list" || isSimpleMode) && (
-            <ListEditor
-              state={selectedList}
-              handleUpdateItem={handleUpdateItem}
-              handleAddItem={handleAddItem}
-              handleDeleteItem={handleDeleteItem}
-              focusedItemId={focusedItemId}
-              setFocusedItemId={setFocusedItemId}
-            />
+        <div
+          className={clsx(
+            "fixed top-0 left-0 h-full bg-background z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
+            {
+              "translate-x-0": isMobileDrawerOpen,
+              "-translate-x-full": !isMobileDrawerOpen,
+            },
           )}
-          {selectedListId && viewMode === "gantt" && !isSimpleMode && (
-            <GanttView listId={selectedListId} />
-          )}
+        >
+          {sidebarContent}
         </div>
-      </div>
-    </main>
+
+        {/* Desktop Sidebar */}
+        <div
+          className={clsx(
+            "hidden md:block border-r h-full overflow-y-auto transition-all duration-300",
+            {
+              "w-1/4 p-4": isDesktopSidebarOpen,
+              "w-0 p-0 border-0": !isDesktopSidebarOpen,
+            },
+          )}
+        >
+          {isDesktopSidebarOpen && sidebarContent}
+        </div>
+
+        {/* Main Content */}
+        <div
+          className={clsx(
+            "flex flex-col w-full h-full transition-all duration-300",
+            {
+              "md:w-3/4": isDesktopSidebarOpen,
+              "md:w-full": !isDesktopSidebarOpen,
+            },
+          )}
+        >
+          <StatusBar
+            isDesktopSidebarOpen={isDesktopSidebarOpen}
+            setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+            setIsMobileDrawerOpen={setIsMobileDrawerOpen}
+            lists={lists}
+            selectedListId={selectedListId}
+            setSelectedListId={setSelectedListId}
+            listName={listName}
+            setListName={setListName}
+            handleListNameChange={handleListNameChange}
+            handleCreateList={() => handleCreateList()}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            onSettingsClick={() => setIsSettingsOpen(true)}
+          />
+          <div className="flex-grow overflow-y-auto px-4 mt-16">
+            {selectedList && (viewMode === "list" || isSimpleMode) && (
+              <ListEditor
+                state={selectedList}
+                handleUpdateItem={handleUpdateItem}
+                handleAddItem={handleAddItem}
+                handleDeleteItem={handleDeleteItem}
+                focusedItemId={focusedItemId}
+                setFocusedItemId={setFocusedItemId}
+              />
+            )}
+            {selectedListId && viewMode === "gantt" && !isSimpleMode && (
+              <GanttView listId={selectedListId} />
+            )}
+          </div>
+        </div>
+      </main>
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <Settings
+            onClose={() => {
+              console.log("onClose called");
+              setIsSettingsOpen(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }

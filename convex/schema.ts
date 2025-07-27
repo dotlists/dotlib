@@ -39,6 +39,17 @@ const schema = defineSchema({
   })
     .index("by_list", ["listId"])
     .index("by_user", ["userId"]),
+  subtasks: defineTable({
+    parentId: v.id("items"),
+    text: v.string(),
+    state: v.string(),
+    userId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    startDate: v.optional(v.number()),
+    dueDate: v.optional(v.number()),
+    assigneeId: v.optional(v.string()),
+  }).index("by_parent", ["parentId"]),
   user_profiles: defineTable({
     userId: v.string(),
     username: v.string(),

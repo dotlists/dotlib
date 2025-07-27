@@ -4,7 +4,6 @@
 import { action } from "./_generated/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
 
 export const breakdownTask = action({
   args: {
@@ -12,14 +11,14 @@ export const breakdownTask = action({
     taskId: v.id("items"),
     taskText: v.string(),
   },
-  handler: async (ctx, { listId, taskId, taskText }) => {
+  handler: async (_, { taskText }) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY environment variable not set.");
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Break down the following high-level task into a concise list of 3 to 5 essential sub-tasks: "${taskText}". The sub-tasks should be distinct and actionable. Return the result as a JSON array of strings.`;
 
@@ -33,21 +32,12 @@ export const breakdownTask = action({
       const subTasks = JSON.parse(jsonString);
 
       if (Array.isArray(subTasks)) {
-        // Delete the original task
-        await ctx.runMutation(internal.lists.deleteItem, { id: taskId });
-
-        // Create new tasks
-        for (const subTask of subTasks) {
-          await ctx.runMutation(internal.lists.createItem, {
-            listId,
-            text: subTask,
-            state: "red",
-          });
-        }
+        return subTasks;
       }
+      return [];
     } catch (error) {
       console.error("Error breaking down task:", error);
-      // Optionally, handle the error in the UI
+      return [];
     }
   },
 });

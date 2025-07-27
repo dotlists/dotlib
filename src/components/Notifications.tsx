@@ -33,7 +33,7 @@ export function Notifications() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80">
         {unreadCount === 0 && (
-          <DropdownMenuItem disabled>No new notifications</DropdownMenuItem>
+          <DropdownMenuItem disabled>no new notifications</DropdownMenuItem>
         )}
         {notifications.map((n) => (
           <DropdownMenuItem
@@ -60,13 +60,13 @@ export function Notifications() {
                 variant="outline"
                 onClick={() => declineInvitation({ invitationId: inv._id })}
               >
-                Decline
+                decline
               </Button>
               <Button
                 size="sm"
                 onClick={() => acceptInvitation({ invitationId: inv._id })}
               >
-                Accept
+                accept
               </Button>
             </div>
           </div>

@@ -24,7 +24,7 @@ export function CommentSection({ itemId }: CommentSectionProps) {
 
   return (
     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-      <h4 className="font-bold mb-2">Comments</h4>
+      <h4 className="font-bold mb-2">comments</h4>
       <div className="space-y-2">
         {comments?.map((comment) => (
           <div key={comment._id} className="text-sm">
@@ -37,11 +37,11 @@ export function CommentSection({ itemId }: CommentSectionProps) {
         <Textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
+          placeholder="add a comment..."
           className="text-sm"
         />
         <Button onClick={handleAddComment} size="sm">
-          Send
+          send
         </Button>
       </div>
     </div>

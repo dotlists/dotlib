@@ -21,6 +21,7 @@ import type * as http from "../http.js";
 import type * as lists from "../lists.js";
 import type * as main from "../main.js";
 import type * as notifications from "../notifications.js";
+import type * as subtasks from "../subtasks.js";
 import type * as teams from "../teams.js";
 
 /**
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   lists: typeof lists;
   main: typeof main;
   notifications: typeof notifications;
+  subtasks: typeof subtasks;
   teams: typeof teams;
 }>;
 export declare const api: FilterApi<

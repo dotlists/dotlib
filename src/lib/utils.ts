@@ -10,7 +10,7 @@ export function debounce<F extends (...args: any[]) => any>(
   func: F,
   waitFor: number,
 ) {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let timeout: NodeJS.Timeout;
 
   return (...args: Parameters<F>): Promise<ReturnType<F>> =>
     new Promise((resolve) => {
@@ -18,7 +18,7 @@ export function debounce<F extends (...args: any[]) => any>(
         clearTimeout(timeout);
       }
 
-      timeout = setTimeout(() => resolve(func(...args)), waitFor);
+      timeout = setTimeout(() => resolve(func(...args) as ReturnType<F>), waitFor);
     });
 }
 

@@ -31,7 +31,7 @@ export function TeamMember({ team, viewerRole }: TeamMemberProps) {
               className="h-6"
               onClick={() => handleRemoveMember(member.userId)}
             >
-              Remove
+              remove
             </Button>
           )}
         </li>

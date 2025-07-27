@@ -255,3 +255,59 @@ export const removeMemberFromTeam = mutation({
     }
   },
 });
+
+export const deleteTeam = mutation({
+  args: { teamId: v.id("teams") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const team = await ctx.db.get(args.teamId);
+    if (!team) {
+      throw new Error("Team not found.");
+    }
+
+    if (team.ownerId !== userId) {
+      throw new Error("Only the team owner can delete the team.");
+    }
+
+    // Delete all team members
+    const members = await ctx.db
+      .query("team_members")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .collect();
+    for (const member of members) {
+      await ctx.db.delete(member._id);
+    }
+
+    // Delete all lists and their items
+    const lists = await ctx.db
+      .query("lists")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .collect();
+    for (const list of lists) {
+      const items = await ctx.db
+        .query("items")
+        .withIndex("by_list", (q) => q.eq("listId", list._id))
+        .collect();
+      for (const item of items) {
+        await ctx.db.delete(item._id);
+      }
+      await ctx.db.delete(list._id);
+    }
+
+    // Delete all invitations
+    const invitations = await ctx.db
+      .query("invitations")
+      .withIndex("by_team_invitee", (q) => q.eq("teamId", args.teamId))
+      .collect();
+    for (const invitation of invitations) {
+      await ctx.db.delete(invitation._id);
+    }
+
+    // Delete the team
+    await ctx.db.delete(args.teamId);
+  },
+});

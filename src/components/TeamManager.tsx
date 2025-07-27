@@ -5,11 +5,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import type { Doc } from "@/lib/convex";
 import { TeamMember } from "./TeamMember";
+import { Trash2 } from "lucide-react";
 
 interface TeamManagerProps {
   teams: (Doc<"teams"> & { role: string })[];
   teamLists: Doc<"lists">[];
   handleCreateList: (teamId: Doc<"teams">["_id"]) => void;
+  handleDeleteList: (listId: Doc<"lists">["_id"]) => void;
   setSelectedListId: (listId: Doc<"lists">["_id"]) => void;
   setListName: (name: string) => void;
   selectedListId: Doc<"lists">["_id"] | null;
@@ -19,11 +21,13 @@ export function TeamManager({
   teams,
   teamLists,
   handleCreateList,
+  handleDeleteList,
   setSelectedListId,
   setListName,
   selectedListId,
 }: TeamManagerProps) {
   const createTeam = useMutation(api.teams.createTeam);
+  const deleteTeam = useMutation(api.teams.deleteTeam);
   const sendInvitation = useMutation(api.teams.sendInvitation);
   const [newTeamName, setNewTeamName] = useState("");
   const [inviteeUsername, setInviteeUsername] = useState("");
@@ -36,6 +40,10 @@ export function TeamManager({
       await createTeam({ name: newTeamName.trim() });
       setNewTeamName("");
     }
+  };
+
+  const handleDeleteTeam = async (teamId: Doc<"teams">["_id"]) => {
+    await deleteTeam({ teamId });
   };
 
   const handleSendInvitation = async (teamId: Doc<"teams">["_id"]) => {
@@ -55,11 +63,23 @@ export function TeamManager({
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4 font-heading">Teams</h2>
+      <h2 className="text-xl font-bold mb-4 font-heading">teams</h2>
       {teams.map((team) =>
         team ? (
           <div key={team._id} className="mb-4">
-            <h3 className="font-bold font-heading">{team.name}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold font-heading">{team.name}</h3>
+              {team.role === "admin" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDeleteTeam(team._id)}
+                  className="h-6 w-6"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              )}
+            </div>
             <TeamMember team={team} viewerRole={team.role} />
             <ul>
               {teamLists
@@ -67,7 +87,7 @@ export function TeamManager({
                 .map((list) => (
                   <li
                     key={list._id}
-                    className={`cursor-pointer p-2 rounded ${
+                    className={`flex items-center justify-between cursor-pointer p-2 rounded ${
                       selectedListId === list._id
                         ? "bg-muted/50 text-muted-foreground"
                         : ""
@@ -77,7 +97,20 @@ export function TeamManager({
                       setListName(list.name);
                     }}
                   >
-                    {list.name}
+                    <span>{list.name}</span>
+                    {team.role === "admin" && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteList(list._id);
+                        }}
+                        className="h-6 w-6"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    )}
                   </li>
                 ))}
             </ul>
@@ -87,7 +120,7 @@ export function TeamManager({
               onClick={() => handleCreateList(team._id)}
               className="mt-1"
             >
-              + New Team List
+              + new team list
             </Button>
             {team.role === "admin" && (
               <div className="mt-2">
@@ -99,7 +132,7 @@ export function TeamManager({
                     setSelectedTeamForInvite(team._id);
                     setInviteeUsername(e.target.value);
                   }}
-                  placeholder="Invite user..."
+                  placeholder="invite user..."
                   className="h-8"
                 />
                 <Button
@@ -107,7 +140,7 @@ export function TeamManager({
                   size="sm"
                   className="mt-1"
                 >
-                  Invite
+                  invite
                 </Button>
               </div>
             )}
@@ -118,11 +151,11 @@ export function TeamManager({
         <Input
           value={newTeamName}
           onChange={(e) => setNewTeamName(e.target.value)}
-          placeholder="New team name..."
+          placeholder="new team name..."
           className="mb-2"
         />
         <Button onClick={handleCreateTeam} size="sm">
-          Create Team
+          create team
         </Button>
       </div>
     </div>
