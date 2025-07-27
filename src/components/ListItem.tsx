@@ -65,7 +65,7 @@ export function ListItem({
   teamId,
 }: ListItemProps) {
   const { isSimpleMode } = useSettings();
-  const [text, setText] = useState(node.text);
+  const [text, setText] = useState(atob(node.b64text));
   const [isCommenting, setIsCommenting] = useState(false);
   const [isSubtasksVisible, setIsSubtasksVisible] = useState(false);
   const [newSubtaskText, setNewSubtaskText] = useState("");

@@ -40,7 +40,7 @@ export function ListEditor({
     const stateB = b.state as keyof typeof stateOrder;
     const stateDiff = stateOrder[stateA] - stateOrder[stateB];
     if (stateDiff !== 0) return stateDiff;
-    return a.text.localeCompare(b.text);
+    return atob(a.b64text).localeCompare(atob(b.b64text));
   });
 
   return (
