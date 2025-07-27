@@ -71,6 +71,7 @@ export function ListItem({
   const [isCommenting, setIsCommenting] = useState(false);
   const [isSubtasksVisible, setIsSubtasksVisible] = useState(false);
   const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [isMultiLine, setIsMultiLine] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const breakdownTask = useAction(api.gemini.breakdownTask);
   const teamMembers = useQuery(
@@ -81,6 +82,20 @@ export function ListItem({
   const createSubtask = useMutation(api.subtasks.createSubtask);
   const updateSubtask = useMutation(api.subtasks.updateSubtask);
   const deleteSubtask = useMutation(api.subtasks.deleteSubtask);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const checkMultiLine = () => {
+        const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
+        setIsMultiLine(textarea.scrollHeight > lineHeight + 2);
+      };
+      const resizeObserver = new ResizeObserver(checkMultiLine);
+      resizeObserver.observe(textarea);
+      checkMultiLine(); // Initial check
+      return () => resizeObserver.disconnect();
+    }
+  }, [text]);
 
   const handleBreakdownTask = async () => {
     const subtaskStrings = await breakdownTask({
@@ -198,7 +213,10 @@ export function ListItem({
             });
           }}
           className={clsx(
-            "w-6 h-6 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs flex-shrink-0",
+            "mx-2 transition-all duration-100 cursor-pointer hover:blur-xs flex-shrink-0",
+            isMultiLine
+              ? "w-6 self-stretch rounded-full"
+              : "w-6 h-6 rounded-full",
             colorClass,
           )}
         ></div>

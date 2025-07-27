@@ -115,14 +115,10 @@ export function StatusBar({
           )}
           <Input
             id="list-name-input"
-            className="font-lora w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading"
             value={listName}
             onChange={(e) => setListName(e.target.value)}
             onBlur={(e) => handleListNameChange(e.target.value)}
-            style={{
-              fontFamily: "'Lora', serif",
-              fontWeight: 500,
-            }}
             autoComplete="off"
           />
           <div className="flex items-center">
