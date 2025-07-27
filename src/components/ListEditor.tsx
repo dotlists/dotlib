@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import type { Doc, Id } from "@/lib/convex";
 import { ListItem } from "./ListItem";
+import { useTheme } from "@/hooks/useTheme";
+import clsx from "clsx";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
@@ -30,6 +32,7 @@ export function ListEditor({
   focusedItemId,
   setFocusedItemId,
 }: ListEditorProps) {
+  const { theme } = useTheme();
   const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
 
   const sortedNodes = [...state.nodes].sort((a, b) => {
@@ -42,6 +45,23 @@ export function ListEditor({
 
   return (
     <motion.ul className="px-2 md:px-3 mb-0">
+      <motion.li
+        layout
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-center my-2"
+      >
+        <Button
+          onClick={() => handleAddItem("new task", "red")}
+          variant="outline"
+          className={clsx(
+            "px-8",
+            theme === "blue" && "bg-blue-500 text-white hover:bg-blue-600"
+          )}
+        >
+          add new task <span className={clsx("ml-2 text-xs", theme === "blue" ? "text-blue-200" : "text-muted-foreground")}> (ctrl+shift+n)</span>
+        </Button>
+      </motion.li>
       <AnimatePresence>
         {sortedNodes.map((node) => (
           <ListItem
@@ -55,21 +75,6 @@ export function ListEditor({
             teamId={state.teamId}
           />
         ))}
-        <motion.li
-          layout
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="flex justify-center my-4"
-        >
-          <Button
-            onClick={() => handleAddItem("New task", "red")}
-            variant="outline"
-            className="px-8"
-          >
-            Add new task <span className="ml-2 text-xs text-muted-foreground">(Ctrl+Shift+N)</span>
-          </Button>
-        </motion.li>
       </AnimatePresence>
     </motion.ul>
   );

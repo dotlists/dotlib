@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useSettings } from "@/contexts/SettingsContext";
 import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
 
 const THEMES = ["light", "dark", "gruvbox", "blue", "monochrome"];
 
@@ -18,7 +19,11 @@ export function Settings({ onClose }: SettingsProps) {
 
   // This is the modal content. Clicks inside this div will be stopped.
   const modalContent = (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
       className="bg-background p-8 rounded-lg shadow-lg w-full max-w-md relative"
       onClick={(e) => e.stopPropagation()}
     >
@@ -64,12 +69,15 @@ export function Settings({ onClose }: SettingsProps) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   // The backdrop. Clicks here will close the modal.
   return createPortal(
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       style={{
         position: 'fixed',
         top: 0,
@@ -85,7 +93,7 @@ export function Settings({ onClose }: SettingsProps) {
       onClick={onClose}
     >
       {modalContent}
-    </div>,
+    </motion.div>,
     document.body,
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import type { Doc, Id } from "@/lib/convex";
@@ -37,6 +37,7 @@ import clsx from "clsx";
 import { CommentSection } from "./CommentSection";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Input } from "./ui/input";
+import { SubtaskItem } from "./SubtaskItem";
 
 interface ListItemProps {
   node: Doc<"items"> & { uuid: Id<"items"> };
@@ -80,8 +81,6 @@ export function ListItem({
   );
   const subtasks = useQuery(api.subtasks.getSubtasks, { parentId: node.uuid });
   const createSubtask = useMutation(api.subtasks.createSubtask);
-  const updateSubtask = useMutation(api.subtasks.updateSubtask);
-  const deleteSubtask = useMutation(api.subtasks.deleteSubtask);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -176,9 +175,10 @@ export function ListItem({
   return (
     <motion.li
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ layout: { duration: 0.2, ease: "easeOut" } }}
       className="flex flex-col hover:bg-muted/50 rounded-lg my-1 p-1"
       key={node.uuid}
       id={node.uuid}
@@ -333,86 +333,38 @@ export function ListItem({
           </DropdownMenu>
         </div>
       </div>
-      {isSubtasksVisible && (
-        <div className="ml-12 mt-2">
-          <ul>
-            {subtasks?.map((subtask) => {
-              const subtaskColorClass =
-                subtask.state === "todo"
-                  ? "bg-red-500"
-                  : subtask.state === "in progress"
-                  ? "bg-yellow-500"
-                  : "bg-green-500";
-
-              return (
-                <li key={subtask._id} className="flex items-center">
-                  <div
-                    onClick={() => {
-                      const currentState =
-                        subtask.state as keyof typeof subtaskStateOrder;
-                      const newState =
-                        (subtaskStateOrder[currentState] + 1) % 3;
-                      updateSubtask({
-                        subtaskId: subtask._id,
-                        state: subtaskStateOrderReversed[newState],
-                      });
-                    }}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      const currentState =
-                        subtask.state as keyof typeof subtaskStateOrder;
-                      const newState =
-                        (subtaskStateOrder[currentState] + 2) % 3;
-                      updateSubtask({
-                        subtaskId: subtask._id,
-                        state: subtaskStateOrderReversed[newState],
-                      });
-                    }}
-                    className={clsx(
-                      "w-4 h-4 mx-2 rounded-full transition-all duration-100 cursor-pointer hover:blur-xs flex-shrink-0",
-                      subtaskColorClass,
-                    )}
-                  ></div>
-                  <Input
-                    value={subtask.text}
-                    onChange={(e) =>
-                      updateSubtask({
-                        subtaskId: subtask._id,
-                        text: e.target.value,
-                      })
-                    }
-                    className="h-8 border-none bg-transparent focus:ring-0"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => deleteSubtask({ subtaskId: subtask._id })}
-                    className="h-6 w-6"
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="flex items-center mt-2">
-            <Input
-              value={newSubtaskText}
-              onChange={(e) => setNewSubtaskText(e.target.value)}
-              placeholder="new subtask..."
-              className="h-8"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleCreateSubtask();
-                }
-              }}
-            />
-            <Button onClick={handleCreateSubtask} size="sm" className="ml-2">
-              add
-            </Button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {isSubtasksVisible && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="ml-12 mt-2 overflow-hidden"
+          >
+            <ul>
+              {subtasks?.map((subtask) => (
+                <SubtaskItem key={subtask._id} subtask={subtask} />
+              ))}
+            </ul>
+            <div className="flex items-center mt-2">
+              <Input
+                value={newSubtaskText}
+                onChange={(e) => setNewSubtaskText(e.target.value)}
+                placeholder="new subtask..."
+                className="h-8"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleCreateSubtask();
+                  }
+                }}
+              />
+              <Button onClick={handleCreateSubtask} size="sm" className="ml-2">
+                add
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {isCommenting && <CommentSection itemId={node.uuid} />}
     </motion.li>
   );
