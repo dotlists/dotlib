@@ -28,8 +28,8 @@ const schema = defineSchema({
     .index("by_team", ["teamId"]),
   items: defineTable({
     listId: v.id("lists"),
-    text: v.string(),
-    b64text: v.optional(v.string()),
+    text: v.optional(v.string()),
+    b64text: v.string(),
     state: v.string(),
     userId: v.string(),
     createdAt: v.number(),

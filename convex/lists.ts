@@ -62,7 +62,7 @@ export const getLists = query({
 
         const decodedItems = items.map((item) => ({
           ...item,
-          text: item.text ? atob(item.text) : item.text,
+          text: item.b64text ? atob(item.b64text) : item.b64text,
         }));
 
         return { ...list, nodes: decodedItems };
@@ -72,22 +72,6 @@ export const getLists = query({
     return listsWithItems.sort((a, b) => a.name.localeCompare(b.name));
   },
 });
-
-export const b64Encode = mutation({
-  handler: async (ctx) => {
-    const items = await ctx.db.query("items").collect();
-
-    for (const item of items) {
-      if (typeof item.text === "string") {
-        const b64text = btoa(item.text);
-        await ctx.db.patch(item._id, { b64text });
-      }
-    }
-
-    return { updated: items.length };
-  },
-});
-
 
 // Helper function to check if a user has access to a list
 export const hasAccessToList = async (
@@ -129,11 +113,11 @@ export const getItems = query({
       .filter((q) => q.eq(q.field("listId"), args.listId))
       .collect();
     return items.map((item) => (
-      console.log(item.text),
-      console.log(atob(item.text)), 
+      console.log(item.b64text),
+      console.log(atob(item.b64text)), 
       {
       uuid: item._id,
-      text: atob(item.text),
+      text: atob(item.b64text),
       state: item.state,
     }));
   },
@@ -284,7 +268,7 @@ export const createItem = internalMutation({
     console.log(btoa(args.text));
     const item = await ctx.db.insert("items", {
       listId: args.listId,
-      text: btoa(args.text),
+      b64text: btoa(args.text),
       state: args.state,
       userId: "internal", // or some other indicator
       createdAt: Date.now(),
@@ -313,7 +297,7 @@ export const createItemPublic = mutation({
     console.log(btoa(args.text));
     return await ctx.db.insert("items", {
       listId: args.listId,
-      text: btoa(args.text),
+      b64text: btoa(args.text),
       state: args.state,
       userId,
       createdAt: Date.now(),
@@ -365,7 +349,7 @@ export const updateItem = mutation({
     };
 
     if (encodedText !== undefined) {
-      patchData.text = encodedText;
+      patchData.b64text = encodedText;
     }
 
     await ctx.db.patch(id, patchData);
