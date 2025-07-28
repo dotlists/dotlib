@@ -4,6 +4,8 @@ import type { Doc, Id } from "@/lib/convex";
 import { ListItem } from "./ListItem";
 import { useTheme } from "@/hooks/useTheme";
 import clsx from "clsx";
+import { Plus } from "lucide-react";
+import { useRef } from "react";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
@@ -34,6 +36,7 @@ export function ListEditor({
 }: ListEditorProps) {
   const { theme } = useTheme();
   const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
+  const textareaRefs = useRef<Map<Id<"items">, HTMLTextAreaElement>>(new Map());
 
   const sortedNodes = [...state.nodes].sort((a, b) => {
     const stateA = a.state as keyof typeof stateOrder;
@@ -55,11 +58,12 @@ export function ListEditor({
           onClick={() => handleAddItem("new task", "red")}
           variant="outline"
           className={clsx(
-            "px-8",
+            "w-full flex-col",
             theme === "blue" && "bg-blue-500 text-white hover:bg-blue-600"
           )}
         >
-          add new task <span className={clsx("ml-2 text-xs", theme === "blue" ? "text-blue-200" : "text-muted-foreground")}> (ctrl+shift+n)</span>
+          <Plus className="w-5 h-5 -mb-3" />
+          <span className="text-xs">⌘+enter</span>
         </Button>
       </motion.li>
       <AnimatePresence>
@@ -73,6 +77,8 @@ export function ListEditor({
             setFocusedItemId={setFocusedItemId}
             listId={state.id}
             teamId={state.teamId}
+            sortedNodes={sortedNodes}
+            textareaRefs={textareaRefs}
           />
         ))}
       </AnimatePresence>

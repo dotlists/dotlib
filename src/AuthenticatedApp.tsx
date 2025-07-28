@@ -6,10 +6,19 @@ import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
 import { GanttView } from "./components/GanttView";
 import { Settings } from "./components/Settings";
-import { ChevronsLeft, Trash2 } from "lucide-react";
+import { ChevronsLeft, Trash2, GripVertical, Plus } from "lucide-react";
 import clsx from "clsx";
 import { useSettings } from "./contexts/SettingsContext";
 import { AnimatePresence } from "framer-motion";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./components/ui/dialog";
 
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
@@ -28,6 +37,7 @@ export default function AuthenticatedApp() {
   const userProfile = useQuery(api.main.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
+  const reorderLists = useMutation(api.lists.reorderLists);
 
   const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
     null,
@@ -49,6 +59,8 @@ export default function AuthenticatedApp() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const lists: ConvexList[] = useMemo(
     () =>
@@ -82,35 +94,35 @@ export default function AuthenticatedApp() {
     }
   };
 
+  const handleReorderLists = async (fromIdx: number, toIdx: number) => {
+    const reorderedLists = [...personalLists];
+    const [removed] = reorderedLists.splice(fromIdx, 1);
+    reorderedLists.splice(toIdx, 0, removed);
+
+    try {
+      await reorderLists({
+        listIds: reorderedLists.map((list) => list._id),
+      });
+    } catch (error) {
+      console.error("Failed to reorder lists:", error);
+    }
+  };
+
   const handleCreateList = useCallback(async (teamId?: Id<"teams">) => {
     const result = await createList({ name: "New List", teamId });
     if (result) {
       setSelectedListId(result);
       setListName("New List");
       setIsMobileDrawerOpen(false);
+      setTimeout(() => {
+        const input = document.getElementById("list-name-input");
+        if (input) {
+          (input as HTMLInputElement).focus();
+          (input as HTMLInputElement).select();
+        }
+      }, 100);
     }
   }, [createList]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key === "L") {
-        event.preventDefault();
-        handleCreateList();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleCreateList]);
-
-  useEffect(() => {
-    if (lists.length > 0 && (!selectedListId || !lists.some(list => list.id === selectedListId))) {
-      setSelectedListId(lists[0].id);
-      setListName(lists[0].name);
-    }
-  }, [lists, selectedListId]);
 
   const handleAddItem = useCallback(async (
     text: string,
@@ -201,37 +213,94 @@ export default function AuthenticatedApp() {
         </Button>
       </div>
       <ul>
-        {personalLists.map((list) => (
+        {personalLists.map((list, idx) => (
           <li
             key={list.id}
             className={`flex items-center justify-between cursor-pointer p-2 rounded ${
               selectedListId === list.id
                 ? "bg-muted/50 text-muted-foreground"
                 : ""
-            }`}
+            } ${dragOverIdx === idx && draggedIdx !== null && draggedIdx !== idx ? "bg-accent/50" : ""}`}
             onClick={() => {
               setSelectedListId(list.id);
               setListName(list.name);
               setIsMobileDrawerOpen(false);
             }}
+            draggable
+            onDragStart={(e: React.DragEvent) => {
+              setDraggedIdx(idx);
+              e.dataTransfer.effectAllowed = "move";
+            }}
+            onDragOver={(e: React.DragEvent) => {
+              e.preventDefault();
+              setDragOverIdx(idx);
+            }}
+            onDrop={(e: React.DragEvent) => {
+              e.preventDefault();
+              if (draggedIdx !== null && draggedIdx !== idx) {
+                void handleReorderLists(draggedIdx, idx);
+              }
+              setDraggedIdx(null);
+              setDragOverIdx(null);
+            }}
+            onDragEnd={() => {
+              setDraggedIdx(null);
+              setDragOverIdx(null);
+            }}
+            style={{
+              opacity: draggedIdx === idx ? 0.5 : 1,
+              userSelect: "none",
+            }}
           >
-            <span>{list.name}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteList(list.id);
-              }}
-              className="h-6 w-6"
-            >
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
+            <span className="flex-1 truncate">{list.name}</span>
+            <GripVertical className="w-4 h-4 text-muted-foreground/50" />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-6 w-6"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </DialogTrigger>
+              {personalLists.length === 1 ? (
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>You need at least one list</DialogTitle>
+                  <DialogDescription>
+                    You cannot delete your last remaining list. Please create
+                    another list before deleting this one.
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            ) : (
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your list and remove its data from our servers.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogClose>
+                  <Button
+                    variant="destructive"
+                    onClick={() => void handleDeleteList(list.id)}
+                  >
+                    Delete this list
+                  </Button>
+                </DialogClose>
+              </DialogContent>
+            )}
+            </Dialog>
           </li>
         ))}
       </ul>
       <Button variant="ghost" size="sm" onClick={() => handleCreateList()} className="mt-1">
-        + new personal list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span>
+        <Plus className="w-4 h-4 mr-2" />
+        new personal list
       </Button>
       {!isSimpleMode && (
         <>

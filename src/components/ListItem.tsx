@@ -50,6 +50,8 @@ interface ListItemProps {
   setFocusedItemId: (id: Id<"items"> | null) => void;
   listId: Id<"lists">;
   teamId?: Id<"teams">;
+  sortedNodes: (Doc<"items"> & { uuid: Id<"items"> })[];
+  textareaRefs: React.MutableRefObject<Map<Id<"items">, HTMLTextAreaElement>>;
 }
 
 const stateOrder = { red: 0, yellow: 1, green: 2 } as const;
@@ -63,6 +65,8 @@ export function ListItem({
   setFocusedItemId,
   listId,
   teamId,
+  sortedNodes,
+  textareaRefs,
 }: ListItemProps) {
   const { isSimpleMode } = useSettings();
   const [text, setText] = useState(node.text);
@@ -70,7 +74,6 @@ export function ListItem({
   const [isSubtasksVisible, setIsSubtasksVisible] = useState(false);
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [isMultiLine, setIsMultiLine] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const breakdownTask = useAction(api.gemini.breakdownTask);
   const teamMembers = useQuery(
     api.teams.getTeamMembers,
@@ -80,7 +83,7 @@ export function ListItem({
   const createSubtask = useMutation(api.subtasks.createSubtask);
 
   useEffect(() => {
-    const textarea = textareaRef.current;
+    const textarea = textareaRefs.current.get(node.uuid);
     if (textarea) {
       const checkMultiLine = () => {
         const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
@@ -91,7 +94,7 @@ export function ListItem({
       checkMultiLine(); // Initial check
       return () => resizeObserver.disconnect();
     }
-  }, [text]);
+  }, [text, node.uuid, textareaRefs]);
 
   const handleBreakdownTask = async () => {
     const subtaskStrings = await breakdownTask({
@@ -113,11 +116,11 @@ export function ListItem({
 
   useEffect(() => {
     if (node.uuid === focusedItemId) {
-      textareaRef.current?.focus();
-      textareaRef.current?.select();
+      textareaRefs.current.get(node.uuid)?.focus();
+      textareaRefs.current.get(node.uuid)?.select();
       setFocusedItemId(null);
     }
-  }, [focusedItemId, node.uuid, setFocusedItemId]);
+  }, [focusedItemId, node.uuid, setFocusedItemId, textareaRefs]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -218,7 +221,13 @@ export function ListItem({
           )}
         ></div>
         <Textarea
-          ref={textareaRef}
+          ref={(el: HTMLTextAreaElement | null) => {
+            if (el) {
+              textareaRefs.current.set(node.uuid, el);
+            } else {
+              textareaRefs.current.delete(node.uuid);
+            }
+          }}
           value={text}
           onChange={(e) => setText(e.target.value)}
           className="text-sm md:text-base self-center focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
@@ -237,9 +246,40 @@ export function ListItem({
             }
           }}
           onKeyDown={(e) => {
+            const textarea = e.currentTarget;
             if (e.key === "Backspace" && text === "") {
               e.preventDefault();
               handleDeleteItem(node.uuid);
+            }
+
+            const currentIndex = sortedNodes.findIndex(n => n.uuid === node.uuid);
+
+            if (
+              e.key === 'ArrowUp' &&
+              textarea.selectionStart === 0 &&
+              textarea.selectionEnd === 0 &&
+              currentIndex > 0
+            ) {
+              e.preventDefault();
+              const prevNode = sortedNodes[currentIndex - 1];
+              textareaRefs.current.get(prevNode.uuid)?.focus();
+            }
+
+            if (
+              e.key === 'ArrowDown' &&
+              textarea.selectionStart === textarea.value.length &&
+              textarea.selectionEnd === textarea.value.length &&
+              currentIndex < sortedNodes.length - 1
+            ) {
+              const value = textarea.value;
+              const beforeCaret = value.slice(0, textarea.selectionStart);
+              if (
+                beforeCaret.split('\n').length === value.split('\n').length
+              ) {
+                e.preventDefault();
+                const nextNode = sortedNodes[currentIndex + 1];
+                textareaRefs.current.get(nextNode.uuid)?.focus();
+              }
             }
           }}
         />
