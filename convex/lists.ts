@@ -53,17 +53,7 @@ export const getLists = query({
 
     const allLists = [...personalLists, ...teamLists];
 
-    const listsWithItems = await Promise.all(
-      allLists.map(async (list) => {
-        const items = await ctx.db
-          .query("items")
-          .withIndex("by_list", (q) => q.eq("listId", list._id))
-          .collect();
-        return { ...list, nodes: items };
-      }),
-    );
-
-    return listsWithItems.sort((a, b) => a.name.localeCompare(b.name));
+    return allLists.sort((a, b) => a.name.localeCompare(b.name));
   },
 });
 
@@ -102,15 +92,10 @@ export const getItems = query({
     if (!userId || !(await hasAccessToList(ctx, userId, args.listId))) {
       throw new Error("Unauthorized");
     }
-    const items = await ctx.db
+    return await ctx.db
       .query("items")
-      .filter((q) => q.eq(q.field("listId"), args.listId))
+      .withIndex("by_list", (q) => q.eq("listId", args.listId))
       .collect();
-    return items.map((item) => ({
-      uuid: item._id,
-      text: item.text,
-      state: item.state,
-    }));
   },
 });
 
@@ -401,6 +386,3 @@ export const getItemsWithDueDates = query({
     return allItems.filter((item) => item.dueDate);
   },
 });
-
-
-
