@@ -29,6 +29,15 @@ export default function AuthenticatedApp() {
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
 
+  const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
+    null,
+  );
+
+  const items = useQuery(
+    api.lists.getItems,
+    selectedListId ? { listId: selectedListId } : "skip",
+  );
+
   const createList = useMutation(api.lists.createListPublic);
   const updateList = useMutation(api.lists.updateList);
   const deleteList = useMutation(api.lists.deleteListPublic);
@@ -47,20 +56,19 @@ export default function AuthenticatedApp() {
         ...list,
         id: list._id,
         nodes:
-          list.nodes?.map((node) => ({
-            ...node,
-            uuid: node._id,
-          })) ?? [],
+          items
+            ?.filter((item) => item.listId === list._id)
+            .map((node) => ({
+              ...node,
+              uuid: node._id,
+            })) ?? [],
       })) ?? [],
-    [rawLists],
+    [rawLists, items],
   );
 
   const personalLists = lists.filter((list) => !list.teamId);
   const teamLists = lists.filter((list) => list.teamId);
 
-  const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
-    null,
-  );
   const [listName, setListName] = useState<string>("");
   const [focusedItemId, setFocusedItemId] = useState<Id<"items"> | null>(null);
 
