@@ -313,6 +313,7 @@ export function ListItem({
                     onSelect={(date) =>
                       handleUpdateItem(node.uuid, { dueDate: date?.getTime() })
                     }
+                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
