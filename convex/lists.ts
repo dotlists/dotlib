@@ -356,5 +356,51 @@ export const deleteItemPublic = mutation({
   },
 });
 
+export const getItemsWithDueDates = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get personal lists
+    const personalLists = await ctx.db
+      .query("lists")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("teamId"), undefined))
+      .collect();
+
+    // Get team lists
+    const teamMemberships = await ctx.db
+      .query("team_members")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    const teamLists = (
+      await Promise.all(
+        teamMemberships.map(async (membership) => {
+          return await ctx.db
+            .query("lists")
+            .withIndex("by_team", (q) => q.eq("teamId", membership.teamId))
+            .collect();
+        }),
+      )
+    ).flat();
+
+    const allLists = [...personalLists, ...teamLists];
+
+    const allItems = (
+      await Promise.all(
+        allLists.map(async (list) => {
+          return await ctx.db
+            .query("items")
+            .withIndex("by_list", (q) => q.eq("listId", list._id))
+            .collect();
+        }),
+      )
+    ).flat();
+
+    return allItems.filter((item) => item.dueDate);
+  },
+});
+
 
 

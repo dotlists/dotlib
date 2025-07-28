@@ -6,6 +6,10 @@ import { useTheme } from "@/hooks/useTheme";
 import { useSettings } from "@/contexts/SettingsContext";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useMemo } from "react";
+import { ShareLinkComponent } from "./ui/ShareLink";
 
 const THEMES = ["light", "dark", "gruvbox", "blue", "monochrome"];
 
@@ -16,8 +20,17 @@ interface SettingsProps {
 export function Settings({ onClose }: SettingsProps) {
   const { theme, setTheme } = useTheme();
   const { isSimpleMode, setIsSimpleMode } = useSettings();
+  const user = useQuery(api.main.getMyUserProfile);
 
-  // This is the modal content. Clicks inside this div will be stopped.
+  const calendarUrl = useMemo(() => {
+    if (!user) return "";
+    let convex_url = (import.meta.env as any).VITE_CONVEX_URL;
+    convex_url = convex_url.replace('https://', 'webcal://');
+    convex_url = convex_url.replace('.convex.cloud', '.convex.site');
+    convex_url += `/calendar?userId=${user.userId}`;
+    return convex_url;
+  }, [user]);
+
   const modalContent = (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -68,11 +81,33 @@ export function Settings({ onClose }: SettingsProps) {
             <Label htmlFor="simple-mode">enable simple mode</Label>
           </div>
         </div>
+        <div>
+          <h3 className="text-lg font-medium">calendar integration</h3>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <p>Subscribe to your tasks with due dates in your calendar app.</p>
+            <ul className="list-disc list-inside pl-2">
+              <li>
+                <strong>For Google Calendar:</strong> Go to{" "}
+                <code className="bg-muted p-1 rounded">Settings &gt; Add Calendar &gt; From URL</code>{" "}
+                and enter the link below.
+              </li>
+              <li>
+                <strong>For other calendars:</strong> Look for an option to import an
+                iCal calendar and use the link below.
+              </li>
+            </ul>
+            <p className="font-semibold text-destructive">
+              Do not share this link. Anyone with this link can access your tasks.
+            </p>
+          </div>
+          <div className="mt-2">
+            <ShareLinkComponent link={calendarUrl} />
+          </div>
+        </div>
       </div>
     </motion.div>
   );
 
-  // The backdrop. Clicks here will close the modal.
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
