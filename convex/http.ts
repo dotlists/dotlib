@@ -71,4 +71,59 @@ http.route({
   }),
 });
 
+http.route({
+  path: "/calendar",
+  method: "GET",
+  handler: httpAction(async (ctx, req) => {
+    const url = new URL(req.url);
+    const userId = url.searchParams.get("userId");
+    if (!userId) {
+      return new Response("Missing `userId` parameter", { status: 400 });
+    }
+
+    const items = await ctx.runQuery(api.lists.getItemsWithDueDates, {
+      userId: userId,
+    });
+
+    const events = items.map((item) => {
+      const lines = item.text.split("\n");
+      const title = lines[0];
+      const description = lines.slice(1).join("\n");
+      const dt = new Date(item.dueDate!)
+
+      const date = dt.toISOString().split("T")[0].replace(/-/g, "");
+
+      return [
+        "BEGIN:VEVENT",
+        `UID:${item._id}@dotlist`,
+        `DTSTAMP:${date}T000000Z`,
+        `DTSTART;VALUE=DATE:${date}`,
+        `DTEND;VALUE=DATE:${date}`,
+        `SUMMARY:${title}`,
+        description ? `DESCRIPTION:${description}` : "",
+        "END:VEVENT",
+      ]
+        .filter(Boolean)
+        .join("\r\n");
+    });
+
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//dotlist//EN",
+      "NAME:Dotlist Calendar",
+      ...events,
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    return new Response(ics, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/calendar; charset=utf-8",
+        "Content-Disposition": `attachment; filename="tasks-${userId}.ics"`,
+      },
+    });
+  }),
+});
+
 export default http;
