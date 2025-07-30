@@ -6,8 +6,8 @@ import { useTheme } from "@/hooks/useTheme";
 import { useSettings } from "@/contexts/SettingsContext";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@/lib/convex";
+import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import { ShareLinkComponent } from "./ui/ShareLink";
 
@@ -20,6 +20,8 @@ interface SettingsProps {
 export function Settings({ onClose }: SettingsProps) {
   const { theme, setTheme } = useTheme();
   const { isSimpleMode, setIsSimpleMode } = useSettings();
+  const generateAuthKey = useMutation(api.auth.generateAuthKey);
+  const getAuthKey = useQuery(api.auth.getAuthKey);
   const user = useQuery(api.main.getMyUserProfile);
 
   const calendarUrl = useMemo(() => {
@@ -102,6 +104,22 @@ export function Settings({ onClose }: SettingsProps) {
           </div>
           <div className="mt-2">
             <ShareLinkComponent link={calendarUrl} />
+          </div>
+        </div>
+        <div>
+          <h3 className="text-lg font-medium">authentication key</h3>
+          <p className="text-sm text-muted-foreground">
+            generate a temporary key to authenticate external applications.
+          </p>
+          <div className="flex items-center space-x-2 mt-2">
+            <Button
+              key="generate-auth"
+              variant="outline"
+              onClick={() => generateAuthKey()}
+            >
+              generate key
+            </Button>
+            <Label htmlFor="generate-auth">{getAuthKey === undefined ? "" : getAuthKey}</Label>
           </div>
         </div>
       </div>

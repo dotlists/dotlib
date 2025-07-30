@@ -4,6 +4,14 @@ import { authTables } from "@convex-dev/auth/server";
 
 const schema = defineSchema({
   ...authTables,
+  authKeys: defineTable({
+    code: v.string(),
+    userId: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_createdAt", ["userId", "createdAt"]),
   teams: defineTable({
     name: v.string(),
     ownerId: v.string(),
