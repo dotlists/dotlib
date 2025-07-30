@@ -2,7 +2,12 @@
 
 @plugin "tailwindcss-animate";
 
+@custom-variant light (&:is(.light *));
 @custom-variant dark (&:is(.dark *));
+@custom-variant midnight (&:is(.midnight *));
+@custom-variant gruvbox (&:is(.gruvbox *));
+@custom-variant blue (&:is(.blue *));
+@custom-variant monochrome (&:is(.monochrome *));
 
 @theme {
   --font-serif: "PP Editorial";
@@ -14,12 +19,14 @@
   --color-ring: var(--ring);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
+  
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
+  
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  
+  --color-tertiary: var(--tertiary);
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -101,6 +108,7 @@
 @layer base {
   :root, .light {
     --background: hsl(49 80% 89%); /* #fbf1c7 */
+    --tertiary: hsl(49 80 89);
     --foreground: hsl(20 5% 23%); /* #3c3836 */
     --card: hsl(49 80% 89%);
     --card-foreground: hsl(20 5% 23%);
@@ -124,7 +132,7 @@
 
   .dark {
     --background: hsl(0 0% 12%);
-    --background-secondary: hsl(0, 0%, 17%);
+    --tertiary: hsl(0, 0%, 12%);
     --foreground: hsl(0 0% 98%);
     --card: hsl(240 10% 3.9%);
     --card-foreground: hsl(0 0% 98%);
@@ -147,6 +155,7 @@
 
   .midnight {
     --background: hsl(240 10% 3.9%);
+    --tertiary: hsl(240 10% 3.9%);
     --foreground: hsl(0 0% 98%);
     --card: hsl(240 10% 3.9%);
     --card-foreground: hsl(0 0% 98%);
@@ -169,6 +178,7 @@
 
   .gruvbox {
     --background: hsl(40 13% 15%); /* #282828 */
+    --tertiary: hsl(40 13% 15%); /* #282828 */
     --foreground: hsl(40 53% 84%); /* #ebdbb2 */
     --card: hsl(40 13% 20%); /* #3c3836 */
     --card-foreground: hsl(40 53% 84%);
@@ -191,6 +201,7 @@
 
   .blue {
     --background: hsl(0 0% 100%);
+    --tertiary: hsl(0 0% 100%);
     --foreground: hsl(222.2 84% 4.9%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(222.2 84% 4.9%);
@@ -213,6 +224,7 @@
 
   .monochrome {
     --background: hsl(0 0% 100%);
+    --tertiary: hsl(0 0% 100%);
     --foreground: hsl(0 0% 3.9%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(0 0% 3.9%);

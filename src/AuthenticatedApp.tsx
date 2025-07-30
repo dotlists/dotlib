@@ -204,7 +204,7 @@ export default function AuthenticatedApp() {
         {/* mobile sidebar */}
         <div
           className={clsx(
-            "fixed top-0 left-0 h-full bg-background z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
+            "fixed top-0 left-0 h-full bg-background-secondary z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
             {
               "translate-x-0": isMobileDrawerOpen,
               "-translate-x-full": !isMobileDrawerOpen,
@@ -230,7 +230,7 @@ export default function AuthenticatedApp() {
         {/* Desktop Sidebar */}
         <div
           className={clsx(
-            "hidden md:block border-r h-full overflow-y-auto transition-all duration-300",
+            "hidden md:block border-r h-full overflow-y-auto transition-all duration-300 bg-tertiary",
             {
               "w-2/9 p-4": isDesktopSidebarOpen,
               "w-0 p-0 border-0": !isDesktopSidebarOpen,
@@ -239,19 +239,19 @@ export default function AuthenticatedApp() {
         >
           {isDesktopSidebarOpen && 
             <Sidebar 
-            validTeams={validTeams}
-            isMobileDrawerOpen={isMobileDrawerOpen}
-            setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
-            setIsMobileDrawerOpen={setIsMobileDrawerOpen}
-            personalLists={personalLists}
-            teamLists={teamLists}
-            selectedListId={selectedListId}
-            setSelectedListId={setSelectedListId}
-            setListName={setListName}
-            handleDeleteList={handleDeleteList}
-            handleCreateList={handleCreateList}
-            isSimpleMode={isSimpleMode}
-          />
+              validTeams={validTeams}
+              isMobileDrawerOpen={isMobileDrawerOpen}
+              setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+              setIsMobileDrawerOpen={setIsMobileDrawerOpen}
+              personalLists={personalLists}
+              teamLists={teamLists}
+              selectedListId={selectedListId}
+              setSelectedListId={setSelectedListId}
+              setListName={setListName}
+              handleDeleteList={handleDeleteList}
+              handleCreateList={handleCreateList}
+              isSimpleMode={isSimpleMode}
+            />
           }
         </div>
 

@@ -69,7 +69,7 @@ export function StatusBar({
   if (!selectedList) {
     return (
       <div className="w-full h-[10vh] p-3">
-        <div className="rounded-b-2xl rounded-t-lg border-3">
+        <div className="rounded-xl border-3">
           <div className="flex px-3 py-1 items-center">
             <p className="text-lg text-muted-foreground">no list selected.</p>
           </div>
@@ -89,8 +89,8 @@ export function StatusBar({
 
   return (
     <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
-      <div className="rounded-b-2xl rounded-t-lg border-3">
-        <div className="flex px-3 py-1 items-center">
+      <div className="rounded-xl border-3 z-10">
+        <div className="flex px-1 py-1 items-center">
           {!false && (
             <>
               <Button
@@ -106,7 +106,7 @@ export function StatusBar({
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsDesktopSidebarOpen(true)}
-                  className="pl-3 -ml-0.5 mr-2 hidden md:block"
+                  className="pl-2.5 mr-2 hidden md:block"
                 >
                   <ChevronsRight className="h-5 w-5" />
                 </Button>
@@ -115,7 +115,7 @@ export function StatusBar({
           )}
           <Input
             id="list-name-input"
-            className="w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30"
+            className="w-full text-xl pl-2 pr-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30 shadow-none"
             value={listName}
             onChange={(e) => setListName(e.target.value)}
             onBlur={(e) => handleListNameChange(e.target.value)}
@@ -183,7 +183,7 @@ export function StatusBar({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex h-12 w-full rounded-b-2xl overflow-hidden">
+        <div className="flex h-12 w-full rounded-b-xl overflow-hidden">
           <div
             className="transition-all duration-100"
             style={{

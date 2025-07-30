@@ -1,7 +1,13 @@
-import { ChevronsLeft, List, MoreVertical, Plus } from "lucide-react";
+import { ChevronsLeft, List, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { TeamManager } from "./TeamManager";
 import type { Doc, Id } from "@/lib/convex";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "./ui/dropdown-menu";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
@@ -61,7 +67,7 @@ export function Sidebar ({
           <ChevronsLeft className="h-5 w-5" />
         </Button>
       </div>
-      <hr className="mt-2 mb-0 bg-accent h-0.5" />
+      <hr className="mt-2 mb-0 border-accent border-b max-h-0.5" />
       <div className="flex items-center justify-between pt-3">
         <h2 className="text-base font-subheading">personal lists</h2>
       </div>
@@ -80,19 +86,28 @@ export function Sidebar ({
               setIsMobileDrawerOpen(false);
             }}
           >
-            <List className="size-4 mr-3"></List>
+            <List className="size-4 mr-3" />
             <span>{list.name}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteList(list.id);
-              }}
-              className="h-6 w-6 ml-auto"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteList(list.id);
+                  }}
+                  className="text-red-500 cursor-pointer"
+                >
+                  <Trash2 className="mr-2 h-4 w-4 text-red-500" />
+                  <span className="text-red-500">delete list</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </li>
         ))}
         <li
@@ -103,9 +118,14 @@ export function Sidebar ({
           <span>add a list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span></span>
         </li>
       </ul>
+      
+      {/* team sidebar */}
       {!isSimpleMode && (
         <>
-          <hr className="my-4 bg-accent h-0.5" />
+          <hr className="mt-2 mb-0 border-accent border-b max-h-0.5" />
+          <div className="flex items-center justify-between pt-3 mb-2.5">
+            <h2 className="text-base font-subheading">teams</h2>
+          </div>
           {validTeams && (
             <TeamManager
               teams={validTeams}
