@@ -7,6 +7,7 @@
 @theme {
   --font-serif: "PP Editorial";
   --font-heading: "Poppins Bold";
+  --font-subheading: "Poppins";
 
   --color-border: var(--border);
   --color-input: var(--input);
@@ -48,6 +49,7 @@
   --font-family-serif: var(--font-serif);
   --font-family-mono: var(--font-mono);
   --font-family-heading: var(--font-heading);
+  --font-family-subheading: var(--font-subheading);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -134,7 +136,7 @@
     --secondary-foreground: hsl(0 0% 98%);
     --muted: hsl(240 3.7% 15.9%);
     --muted-foreground: hsl(240 5% 64.9%);
-    --accent: hsl(240, 3%, 21%);
+    --accent: hsl(240, 3%, 28%);
     --accent-foreground: hsl(0 0% 98%);
     --destructive: hsl(0 62.8% 30.6%);
     --destructive-foreground: hsl(0 0% 98%);
@@ -243,6 +245,13 @@
   font-family: "Poppins Bold";
   src: url("/fonts/Poppins-Bold.ttf") format("truetype");
   font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-Regular.ttf") format("truetype");
+  font-weight: normal;
   font-style: normal;
   font-display: swap;
 }

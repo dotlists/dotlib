@@ -1,4 +1,4 @@
-import { ChevronsLeft, Trash2 } from "lucide-react";
+import { ChevronsLeft, List, MoreVertical, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { TeamManager } from "./TeamManager";
 import type { Doc, Id } from "@/lib/convex";
@@ -47,10 +47,10 @@ export function Sidebar ({
 }: SidebarProps) {
   return (
     <>
-      <div className="container mb-3 not-last:flex flex-row">
-        <div className="container -ml-18 flex items-center">
-          <img src="/favicon.ico" alt="logo" className="h-8 w-8 mr-2" />
-          <span className="font-bold text-xl font-heading">dotlists</span>
+      <div className="container mb-2 -mt-1 not-last:flex flex-row">
+        <div className="container -ml-17 flex items-center">
+          <img src="/favicon.ico" alt="logo" className="size-7 mr-2" />
+          <span className="font-bold text-lg font-heading pt-0.5">dotlists</span>
         </div>
         <Button
           className="-mr-7"
@@ -61,15 +61,15 @@ export function Sidebar ({
           <ChevronsLeft className="h-5 w-5" />
         </Button>
       </div>
-      <hr className="my-4 bg-accent h-0.5" />
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold font-heading">personal lists</h2>
+      <hr className="mt-2 mb-0 bg-accent h-0.5" />
+      <div className="flex items-center justify-between pt-3">
+        <h2 className="text-base font-subheading">personal lists</h2>
       </div>
       <ul>
         {personalLists.map((list) => (
           <li
             key={list.id}
-            className={`flex items-center justify-between cursor-pointer p-2 rounded ${
+            className={`flex items-center justify-start text-start cursor-pointer p-2 m-0 rounded hover:bg-accent/30 ${
               selectedListId === list.id
                 ? "bg-muted/50 text-muted-foreground"
                 : ""
@@ -80,6 +80,7 @@ export function Sidebar ({
               setIsMobileDrawerOpen(false);
             }}
           >
+            <List className="size-4 mr-3"></List>
             <span>{list.name}</span>
             <Button
               variant="ghost"
@@ -88,16 +89,20 @@ export function Sidebar ({
                 e.stopPropagation();
                 handleDeleteList(list.id);
               }}
-              className="h-6 w-6"
+              className="h-6 w-6 ml-auto"
             >
-              <Trash2 className="h-4 w-4 text-red-500" />
+              <MoreVertical className="h-4 w-4" />
             </Button>
           </li>
         ))}
+        <li
+          className="flex items-center justify-start text-start cursor-pointer p-2 m-0 rounded hover:bg-accent/30"
+          onClick={() => handleCreateList()}
+        >
+          <Plus className="size-4 mr-3" />
+          <span>add a list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span></span>
+        </li>
       </ul>
-      <Button variant="ghost" size="sm" onClick={() => handleCreateList()} className="mt-1">
-        + new personal list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span>
-      </Button>
       {!isSimpleMode && (
         <>
           <hr className="my-4 bg-accent h-0.5" />

@@ -2,11 +2,9 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
-import { TeamManager } from "./components/TeamManager";
 import { CreateUsername } from "./components/CreateUsername";
 import { GanttView } from "./components/GanttView";
 import { Settings } from "./components/Settings";
-import { ChevronsLeft, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import { useSettings } from "./contexts/SettingsContext";
 import { AnimatePresence } from "framer-motion";
@@ -203,6 +201,7 @@ export default function AuthenticatedApp() {
           )}
           onClick={() => setIsMobileDrawerOpen(false)}
         />
+        {/* mobile sidebar */}
         <div
           className={clsx(
             "fixed top-0 left-0 h-full bg-background z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
@@ -212,20 +211,20 @@ export default function AuthenticatedApp() {
             },
           )}
         >
-        <Sidebar 
-          validTeams={validTeams}
-          isMobileDrawerOpen={isMobileDrawerOpen}
-          setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
-          setIsMobileDrawerOpen={setIsMobileDrawerOpen}
-          personalLists={personalLists}
-          teamLists={teamLists}
-          selectedListId={selectedListId}
-          setSelectedListId={setSelectedListId}
-          setListName={setListName}
-          handleDeleteList={handleDeleteList}
-          handleCreateList={handleCreateList}
-          isSimpleMode={isSimpleMode}
-        />
+          <Sidebar 
+            validTeams={validTeams}
+            isMobileDrawerOpen={isMobileDrawerOpen}
+            setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+            setIsMobileDrawerOpen={setIsMobileDrawerOpen}
+            personalLists={personalLists}
+            teamLists={teamLists}
+            selectedListId={selectedListId}
+            setSelectedListId={setSelectedListId}
+            setListName={setListName}
+            handleDeleteList={handleDeleteList}
+            handleCreateList={handleCreateList}
+            isSimpleMode={isSimpleMode}
+          />
         </div>
 
         {/* Desktop Sidebar */}
@@ -233,7 +232,7 @@ export default function AuthenticatedApp() {
           className={clsx(
             "hidden md:block border-r h-full overflow-y-auto transition-all duration-300",
             {
-              "w-1/4 p-4": isDesktopSidebarOpen,
+              "w-2/9 p-4": isDesktopSidebarOpen,
               "w-0 p-0 border-0": !isDesktopSidebarOpen,
             },
           )}
@@ -261,7 +260,7 @@ export default function AuthenticatedApp() {
           className={clsx(
             "flex flex-col w-full h-full transition-all duration-300",
             {
-              "md:w-3/4": isDesktopSidebarOpen,
+              "md:w-7/9": isDesktopSidebarOpen,
               "md:w-full": !isDesktopSidebarOpen,
             },
           )}

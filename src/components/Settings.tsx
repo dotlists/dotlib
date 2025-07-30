@@ -114,7 +114,7 @@ export function Settings({ onClose }: SettingsProps) {
           <div className="flex items-center space-x-2 mt-2">
             <Button
               key="generate-auth"
-              variant="outline"
+              variant="default"
               onClick={() => generateAuthKey()}
             >
               generate key
