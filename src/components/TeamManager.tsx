@@ -133,7 +133,7 @@ export function TeamManager({
                     setInviteeUsername(e.target.value);
                   }}
                   placeholder="invite user..."
-                  className="h-8"
+                  className="h-8 bg-input/30"
                 />
                 <Button
                   onClick={() => handleSendInvitation(team._id)}
@@ -152,7 +152,7 @@ export function TeamManager({
           value={newTeamName}
           onChange={(e) => setNewTeamName(e.target.value)}
           placeholder="new team name..."
-          className="mb-2"
+          className="mb-2 bg-input/30"
         />
         <Button onClick={handleCreateTeam} size="sm">
           create team

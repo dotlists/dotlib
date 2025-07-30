@@ -13,6 +13,7 @@ import { AnimatePresence } from "framer-motion";
 
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
+import { Sidebar } from "./components/Sidebar";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
@@ -188,76 +189,9 @@ export default function AuthenticatedApp() {
 
   const validTeams = teams?.filter(Boolean) as (Doc<"teams"> & { role: string })[] | undefined;
 
-  const sidebarContent = (
-    <>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold font-heading">personal lists</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => isMobileDrawerOpen ? setIsMobileDrawerOpen(false) : setIsDesktopSidebarOpen(false)}
-        >
-          <ChevronsLeft className="h-5 w-5" />
-        </Button>
-      </div>
-      <ul>
-        {personalLists.map((list) => (
-          <li
-            key={list.id}
-            className={`flex items-center justify-between cursor-pointer p-2 rounded ${
-              selectedListId === list.id
-                ? "bg-muted/50 text-muted-foreground"
-                : ""
-            }`}
-            onClick={() => {
-              setSelectedListId(list.id);
-              setListName(list.name);
-              setIsMobileDrawerOpen(false);
-            }}
-          >
-            <span>{list.name}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteList(list.id);
-              }}
-              className="h-6 w-6"
-            >
-              <Trash2 className="h-4 w-4 text-red-500" />
-            </Button>
-          </li>
-        ))}
-      </ul>
-      <Button variant="ghost" size="sm" onClick={() => handleCreateList()} className="mt-1">
-        + new personal list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span>
-      </Button>
-      {!isSimpleMode && (
-        <>
-          <hr className="my-4" />
-          {validTeams && (
-            <TeamManager
-              teams={validTeams}
-              teamLists={teamLists}
-              handleCreateList={handleCreateList}
-              handleDeleteList={handleDeleteList}
-              setSelectedListId={(id) => {
-                setSelectedListId(id);
-                setIsMobileDrawerOpen(false);
-              }}
-              setListName={setListName}
-              selectedListId={selectedListId}
-            />
-          )}
-        </>
-      )}
-    </>
-  );
-
   return (
     <>
-      <main className="relative md:flex h-screen">
+      <main className="relative md:flex h-screen dark:scheme-dark">
         {/* Mobile Drawer */}
         <div
           className={clsx(
@@ -278,7 +212,20 @@ export default function AuthenticatedApp() {
             },
           )}
         >
-          {sidebarContent}
+        <Sidebar 
+          validTeams={validTeams}
+          isMobileDrawerOpen={isMobileDrawerOpen}
+          setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+          setIsMobileDrawerOpen={setIsMobileDrawerOpen}
+          personalLists={personalLists}
+          teamLists={teamLists}
+          selectedListId={selectedListId}
+          setSelectedListId={setSelectedListId}
+          setListName={setListName}
+          handleDeleteList={handleDeleteList}
+          handleCreateList={handleCreateList}
+          isSimpleMode={isSimpleMode}
+        />
         </div>
 
         {/* Desktop Sidebar */}
@@ -291,7 +238,22 @@ export default function AuthenticatedApp() {
             },
           )}
         >
-          {isDesktopSidebarOpen && sidebarContent}
+          {isDesktopSidebarOpen && 
+            <Sidebar 
+            validTeams={validTeams}
+            isMobileDrawerOpen={isMobileDrawerOpen}
+            setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+            setIsMobileDrawerOpen={setIsMobileDrawerOpen}
+            personalLists={personalLists}
+            teamLists={teamLists}
+            selectedListId={selectedListId}
+            setSelectedListId={setSelectedListId}
+            setListName={setListName}
+            handleDeleteList={handleDeleteList}
+            handleCreateList={handleCreateList}
+            isSimpleMode={isSimpleMode}
+          />
+          }
         </div>
 
         {/* Main Content */}

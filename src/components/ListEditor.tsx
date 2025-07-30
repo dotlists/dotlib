@@ -52,7 +52,7 @@ export function ListEditor({
         className="flex justify-center my-2"
       >
         <Button
-          onClick={() => handleAddItem("new task", "red")}
+          onClick={() => handleAddItem("", "red")}
           variant="outline"
           className={clsx(
             "px-8",

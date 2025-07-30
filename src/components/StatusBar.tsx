@@ -91,7 +91,7 @@ export function StatusBar({
     <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
       <div className="rounded-b-2xl rounded-t-lg border-3">
         <div className="flex px-3 py-1 items-center">
-          {!isSimpleMode && (
+          {!false && (
             <>
               <Button
                 variant="ghost"
@@ -106,7 +106,7 @@ export function StatusBar({
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsDesktopSidebarOpen(true)}
-                  className="mr-2 hidden md:block"
+                  className="pl-3 -ml-0.5 mr-2 hidden md:block"
                 >
                   <ChevronsRight className="h-5 w-5" />
                 </Button>
@@ -115,7 +115,7 @@ export function StatusBar({
           )}
           <Input
             id="list-name-input"
-            className="w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading"
+            className="w-full text-xl px-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30"
             value={listName}
             onChange={(e) => setListName(e.target.value)}
             onBlur={(e) => handleListNameChange(e.target.value)}
@@ -153,7 +153,7 @@ export function StatusBar({
                 size="icon"
                 tabIndex={-1}
               >
-                <ChevronDown className="w-5 w-5" />
+                <ChevronDown className="w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="p-3 rounded-lg">
