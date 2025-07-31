@@ -4,7 +4,6 @@ import { api } from "@/lib/convex";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import type { Doc } from "@/lib/convex";
-import { TeamMember } from "./TeamMember";
 import { ChevronDown, ChevronRight, List, Plus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -79,7 +78,7 @@ export function TeamManager({
     <div>
       {teams.map((team) =>
         team ? (
-          <div key={team._id} className="mb-4">
+          <div key={team._id} className="mb-0">
             <div 
               className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
               onClick={() => toggleTeamExpand(team._id)}
@@ -154,7 +153,7 @@ export function TeamManager({
                 </motion.div>
               )}
             </AnimatePresence>
-            {/*team.role === "admin" && (
+            {team.role === "admin" && (
               <div className="mt-2 ml-7">
                 <Input
                   value={
@@ -175,7 +174,7 @@ export function TeamManager({
                   invite
                 </Button>
               </div>
-            )*/}
+            )}
           </div>
         ) : null,
       )}
@@ -183,14 +182,14 @@ export function TeamManager({
         value={newTeamName}
         onChange={(e) => setNewTeamName(e.target.value)}
         placeholder="new team name..."
-        className="mb-2 bg-input/30"
+        className="my-2 bg-input/30"
       />
       <div
-        className="flex items-center justify-start text-start cursor-pointer p-2 m-0 rounded hover:bg-accent/30"
+        className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
         onClick={handleCreateTeam}
       >
         <Plus className="size-4 mr-3" />
-        <span>create a new team</span>
+        <span className="text-sm">create a new team</span>
       </div>
     </div>
   );

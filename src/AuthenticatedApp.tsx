@@ -232,7 +232,7 @@ export default function AuthenticatedApp() {
           className={clsx(
             "hidden md:block border-r h-full overflow-y-auto transition-all duration-300 bg-tertiary",
             {
-              "w-2/9 p-4": isDesktopSidebarOpen,
+              "w-100 p-4": isDesktopSidebarOpen,
               "w-0 p-0 border-0": !isDesktopSidebarOpen,
             },
           )}
@@ -260,7 +260,7 @@ export default function AuthenticatedApp() {
           className={clsx(
             "flex flex-col w-full h-full transition-all duration-300",
             {
-              "md:w-7/9": isDesktopSidebarOpen,
+              "md:w-screen": isDesktopSidebarOpen,
               "md:w-full": !isDesktopSidebarOpen,
             },
           )}
