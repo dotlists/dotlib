@@ -281,6 +281,36 @@ export const createItemPublic = mutation({
   },
 });
 
+export const createItemInternal = internalMutation({
+  args: {
+    listId: v.id("lists"),
+    text: v.string(),
+    state: v.string(),
+    startDate: v.optional(v.number()),
+    dueDate: v.optional(v.number()),
+    assigneeId: v.optional(v.string()),
+    userId: v.string(), // Optional userId for internal use
+  },
+  handler: async (ctx, args) => {
+    const { userId } = args;
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    return await ctx.db.insert("items", {
+      listId: args.listId,
+      text: args.text,
+      state: args.state,
+      userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      startDate: args.startDate,
+      dueDate: args.dueDate,
+      assigneeId: args.assigneeId,
+    });
+  },
+});
+
 export const updateItem = mutation({
   args: {
     id: v.id("items"),

@@ -13,7 +13,7 @@ export function ShareLinkComponent({ link }: { link: string }) {
     if (inputRef.current) {
       await navigator.clipboard.writeText(inputRef.current.value);
       toast("Link copied!", {
-        description: "The shareable link has been copied to your clipboard.",
+        description: "The link has been copied to your clipboard.",
       });
     }
   };

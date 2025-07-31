@@ -17,6 +17,7 @@ import type * as auth from "../auth.js";
 import type * as comments from "../comments.js";
 import type * as gantt from "../gantt.js";
 import type * as gemini from "../gemini.js";
+import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as lists from "../lists.js";
 import type * as main from "../main.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   gantt: typeof gantt;
   gemini: typeof gemini;
+  github: typeof github;
   http: typeof http;
   lists: typeof lists;
   main: typeof main;

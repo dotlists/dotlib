@@ -1,6 +1,6 @@
 
 
-import type { Doc, Id } from "@/lib/convex";
+import { api, type Doc, type Id } from "@/lib/convex";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import {
@@ -12,7 +12,6 @@ import {
 } from "./ui/dropdown-menu";
 import { Notifications } from "./Notifications";
 import { useSettings } from "@/contexts/SettingsContext";
-import clsx from "clsx";
 
 import {
   ChevronDown,
@@ -21,8 +20,10 @@ import {
   List,
   BarChart3,
   Settings as SettingsIcon,
+  GithubIcon,
 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation } from "convex/react";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 type ViewMode = "list" | "gantt";
@@ -65,7 +66,7 @@ export function StatusBar({
   const { signOut } = useAuthActions();
   const { isSimpleMode } = useSettings();
   const selectedList = lists.find((list) => list.id === selectedListId);
-
+  const runSync = useMutation(api.github.runGithubSync);
   if (!selectedList) {
     return (
       <div className="w-full h-[10vh] p-3">
@@ -88,7 +89,8 @@ export function StatusBar({
   const greenPct = (greenCount / total) * 100;
 
   return (
-    <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
+    <div className="w-full h-[10vh] p-3 transition-all duration-300">
+
       <div className="rounded-xl border-3 z-10">
         <div className="flex px-1 py-1 items-center">
           <Button
@@ -138,6 +140,15 @@ export function StatusBar({
             )}
           </div>
           <Notifications />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => runSync({
+              listId: selectedListId == null ? undefined : selectedListId,
+            })}
+          >
+            <GithubIcon />
+          </Button>
           <Button variant="ghost" size="icon" onClick={onSettingsClick}>
             <SettingsIcon className="h-5 w-5" />
           </Button>
@@ -209,5 +220,3 @@ export function StatusBar({
     </div>
   );
 }
-
-
