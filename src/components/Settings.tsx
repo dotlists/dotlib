@@ -11,6 +11,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useMemo, useState } from "react";
 import { ShareLinkComponent } from "./ui/ShareLink";
 import { Octokit } from "@octokit/rest";
+import { toast } from "sonner";
 
 const THEMES = ["light", "dark", "midnight", "gruvbox", "blue", "monochrome"];
 
@@ -248,12 +249,15 @@ export function Settings({ onClose, selectedListId }: SettingsProps) {
                                 await octokit.repos.get(edit);
                               }
                               catch {
-                                alert("Repo does not exist.")
+                                toast("Repo does not exist :(");
                                 return;
                               }
                               addLinkedRepo({
                                 listId: selectedListId!,
                                 repo: edit,
+                              });
+                              toast(`Linked repository @${edit.owner}/${edit.repo}`, {
+                                description: `Press the GitHub icon in the status bar to sync issues`,
                               });
                               setCurrentlyEditing((edits) =>
                                 edits.filter((_, i) => i !== index),

@@ -8,7 +8,7 @@ import { Settings } from "./components/Settings";
 import clsx from "clsx";
 import { useSettings } from "./contexts/SettingsContext";
 import { AnimatePresence } from "framer-motion";
-
+import { Toaster } from "sonner";
 import { api, type Id, type Doc } from "@/lib/convex";
 import { Button } from "./components/ui/button";
 import { Sidebar } from "./components/Sidebar";
@@ -308,6 +308,7 @@ export default function AuthenticatedApp() {
           />
         )}
       </AnimatePresence>
+      <Toaster />
     </>
   );
 }
