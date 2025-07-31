@@ -75,7 +75,7 @@ export function Sidebar ({
         {personalLists.map((list) => (
           <li
             key={list.id}
-            className={`flex items-center justify-start text-start cursor-pointer p-2 m-0 rounded hover:bg-accent/30 ${
+            className={`flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30 ${
               selectedListId === list.id
                 ? "bg-muted/50 text-muted-foreground"
                 : ""
@@ -87,7 +87,7 @@ export function Sidebar ({
             }}
           >
             <List className="size-4 mr-3" />
-            <span>{list.name}</span>
+            <span className="text-sm">{list.name}</span>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -111,11 +111,11 @@ export function Sidebar ({
           </li>
         ))}
         <li
-          className="flex items-center justify-start text-start cursor-pointer p-2 m-0 rounded hover:bg-accent/30"
+          className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
           onClick={() => handleCreateList()}
         >
           <Plus className="size-4 mr-3" />
-          <span>add a list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span></span>
+          <span className="text-sm">add a list <span className="ml-2 text-xs text-muted-foreground">(ctrl+shift+l)</span></span>
         </li>
       </ul>
       

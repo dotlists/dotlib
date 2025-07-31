@@ -81,7 +81,7 @@ export function TeamManager({
         team ? (
           <div key={team._id} className="mb-4">
             <div 
-              className="flex items-center justify-start text-start cursor-pointer p-2 m-0 rounded hover:bg-accent/30"
+              className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
               onClick={() => toggleTeamExpand(team._id)}
             >
               {expandedTeamIds.has(team._id)  ? (
@@ -89,7 +89,7 @@ export function TeamManager({
               ) : (
                 <ChevronRight className="size-4 mr-3" />
               )}
-              <span className="">{team.name}</span>
+              <span className="text-sm">{team.name}</span>
               {team.role === "admin" && (
                 <Button
                   variant="ghost"
@@ -116,7 +116,7 @@ export function TeamManager({
                       .map((list) => (
                         <li
                           key={list._id}
-                          className={`flex items-center justify-start text-start cursor-pointer p-2 m-0 ml-7 rounded hover:bg-accent/30 ${
+                          className={`flex items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded hover:bg-accent/30 ${
                             selectedListId === list._id
                               ? "bg-muted/50 text-muted-foreground"
                               : ""
@@ -127,7 +127,7 @@ export function TeamManager({
                           }}
                         >
                           <List className="size-4 mr-3" />
-                          <span>{list.name}</span>
+                          <span className="text-sm">{list.name}</span>
                           {team.role === "admin" && (
                             <Button
                               variant="ghost"
@@ -144,11 +144,11 @@ export function TeamManager({
                         </li>
                       ))}
                     <li
-                      className="flex items-center justify-start text-start cursor-pointer p-2 m-0 ml-7 rounded hover:bg-accent/30"
+                      className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded hover:bg-accent/30"
                       onClick={() => handleCreateList(team._id)}
                     >
                       <Plus className="size-4 mr-3" />
-                      <span>add a team list</span>
+                      <span className="text-sm">add a team list</span>
                     </li>
                   </ul>
                 </motion.div>
