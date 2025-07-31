@@ -91,27 +91,23 @@ export function StatusBar({
     <div className={clsx("w-full h-[10vh] p-3 transition-all duration-300")}>
       <div className="rounded-xl border-3 z-10">
         <div className="flex px-1 py-1 items-center">
-          {!false && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileDrawerOpen(true)}
-                className="mr-2 md:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              {!isDesktopSidebarOpen && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsDesktopSidebarOpen(true)}
-                  className="pl-2.5 mr-2 hidden md:block"
-                >
-                  <ChevronsRight className="h-5 w-5" />
-                </Button>
-              )}
-            </>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileDrawerOpen(true)}
+            className="mr-2 md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          {!isDesktopSidebarOpen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsDesktopSidebarOpen(true)}
+              className="pl-2.5 mr-2 hidden md:block"
+            >
+            <ChevronsRight className="h-5 w-5" />
+            </Button>
           )}
           <Input
             id="list-name-input"
