@@ -211,7 +211,7 @@ export default function AuthenticatedApp() {
             },
           )}
         >
-          <Sidebar 
+          <Sidebar
             validTeams={validTeams}
             isMobileDrawerOpen={isMobileDrawerOpen}
             setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
@@ -237,8 +237,8 @@ export default function AuthenticatedApp() {
             },
           )}
         >
-          {isDesktopSidebarOpen && 
-            <Sidebar 
+          {isDesktopSidebarOpen &&
+            <Sidebar
               validTeams={validTeams}
               isMobileDrawerOpen={isMobileDrawerOpen}
               setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
@@ -300,6 +300,7 @@ export default function AuthenticatedApp() {
       <AnimatePresence>
         {isSettingsOpen && (
           <Settings
+            selectedListId={selectedListId}
             onClose={() => {
               console.log("onClose called");
               setIsSettingsOpen(false);
