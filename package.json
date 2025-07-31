@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@auth/core": "^0.40.0",
+    "@auth/core": "^0.37.4",
     "@convex-dev/auth": "^0.0.87",
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-dropdown-menu": "^2.1.15",

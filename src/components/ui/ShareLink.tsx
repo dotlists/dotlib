@@ -40,7 +40,7 @@ export function ShareLinkComponent({ link }: { link: string }) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button onClick={() => void handleCopy()}>Copy Link</Button>
+            <Button onClick={() => void handleCopy()}>copy link</Button>
           </TooltipTrigger>
           <TooltipContent>
             <p>Copy</p>

@@ -11,7 +11,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useMemo } from "react";
 import { ShareLinkComponent } from "./ui/ShareLink";
 
-const THEMES = ["light", "dark", "gruvbox", "blue", "monochrome"];
+const THEMES = ["light", "dark", "midnight", "gruvbox", "blue", "monochrome"];
 
 interface SettingsProps {
   onClose: () => void;
@@ -39,7 +39,7 @@ export function Settings({ onClose }: SettingsProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
-      className="bg-background p-8 rounded-lg shadow-lg w-full max-w-md relative"
+      className="bg-background p-8 rounded-lg shadow-lg w-full max-w-md relative h-5/6 overflow-y-scroll overflow-x-hidden"
       onClick={(e) => e.stopPropagation()}
     >
       <h2 className="text-2xl font-bold mb-4">settings</h2>
@@ -86,20 +86,20 @@ export function Settings({ onClose }: SettingsProps) {
         <div>
           <h3 className="text-lg font-medium">calendar integration</h3>
           <div className="text-sm text-muted-foreground space-y-1">
-            <p>Subscribe to your tasks with due dates in your calendar app.</p>
+            <p>subscribe to your tasks with due dates in your calendar app.</p>
             <ul className="list-disc list-inside pl-2">
               <li>
-                <strong>For Google Calendar:</strong> Go to{" "}
+                <strong>for Google Calendar:</strong> go to{" "}
                 <code className="bg-muted p-1 rounded">Settings &gt; Add Calendar &gt; From URL</code>{" "}
                 and enter the link below.
               </li>
               <li>
-                <strong>For other calendars:</strong> Look for an option to import an
+                <strong>for other calendars:</strong> look for an option to import an
                 iCal calendar and use the link below.
               </li>
             </ul>
             <p className="font-semibold text-destructive">
-              Do not share this link. Anyone with this link can access your tasks.
+              do not share this link. anyone with this link can access your tasks.
             </p>
           </div>
           <div className="mt-2">
@@ -114,7 +114,7 @@ export function Settings({ onClose }: SettingsProps) {
           <div className="flex items-center space-x-2 mt-2">
             <Button
               key="generate-auth"
-              variant="outline"
+              variant="default"
               onClick={() => generateAuthKey()}
             >
               generate key

@@ -221,6 +221,7 @@ export function ListItem({
           ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          placeholder={"new task"}
           className="text-sm md:text-base self-center focus:outline-none w-full focus:ring-0 border-none bg-transparent resize-none"
           rows={1}
           onInput={(e) => {
