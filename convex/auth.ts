@@ -1,6 +1,5 @@
 import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
-import { randomInt } from "crypto";
 
 import github from "@auth/core/providers/github";
 import Google from "@auth/core/providers/google";
