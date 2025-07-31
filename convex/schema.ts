@@ -31,6 +31,10 @@ const schema = defineSchema({
     order: v.number(),
     createdAt: v.number(),
     updatedAt: v.number(),
+    linkedGithubRepos: v.optional(v.array(v.object({
+      owner: v.string(),
+      repo: v.string(),
+    })))
   })
     .index("by_user", ["userId"])
     .index("by_team", ["teamId"]),
