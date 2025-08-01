@@ -4,7 +4,7 @@ import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
 import { CreateUsername } from "./components/CreateUsername";
 import { GanttView } from "./components/GanttView";
-import { Settings } from "./components/Settings";
+import { Settings } from "./components/Settings/Settings";
 import clsx from "clsx";
 import { useSettings } from "./contexts/SettingsContext";
 import { AnimatePresence } from "framer-motion";
@@ -90,27 +90,6 @@ export default function AuthenticatedApp() {
     }
   }, [createList]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key === "L") {
-        event.preventDefault();
-        handleCreateList();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleCreateList]);
-
-  useEffect(() => {
-    if (lists.length > 0 && (!selectedListId || !lists.some(list => list.id === selectedListId))) {
-      setSelectedListId(lists[0].id);
-      setListName(lists[0].name);
-    }
-  }, [lists, selectedListId]);
-
   const handleAddItem = useCallback(async (
     text: string,
     state: "red" | "yellow" | "green" = "red",
@@ -120,24 +99,6 @@ export default function AuthenticatedApp() {
       setFocusedItemId(newItemId);
     }
   }, [createItem, selectedListId]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key === "L") {
-        event.preventDefault();
-        handleCreateList();
-      }
-      if (event.ctrlKey && event.shiftKey && event.key === "N") {
-        event.preventDefault();
-        handleAddItem("New Task");
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleCreateList, handleAddItem]);
 
   const handleUpdateItem = async (
     id: Id<"items">,
@@ -164,6 +125,34 @@ export default function AuthenticatedApp() {
     }
   };
 
+  // auto open the first list
+  useEffect(() => {
+    if (lists.length > 0 && (!selectedListId || !lists.some(list => list.id === selectedListId))) {
+      setSelectedListId(lists[0].id);
+      setListName(lists[0].name);
+    }
+  }, [lists, selectedListId]);
+
+  // keybinds
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === "L") {
+        event.preventDefault();
+        handleCreateList();
+      }
+      if (event.ctrlKey && event.shiftKey && event.key === "N") {
+        event.preventDefault();
+        handleAddItem("New Task");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleCreateList, handleAddItem]);
+
+  // loading screen
   if (
     userProfile === undefined ||
     rawLists === undefined ||
@@ -176,6 +165,7 @@ export default function AuthenticatedApp() {
     return <CreateUsername />;
   }
 
+  // no lists screen
   if (lists.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
@@ -185,12 +175,13 @@ export default function AuthenticatedApp() {
     );
   }
 
+  // user's valid teams
   const validTeams = teams?.filter(Boolean) as (Doc<"teams"> & { role: string })[] | undefined;
 
   return (
     <>
-      <main className="relative md:flex h-screen dark:scheme-dark">
-        {/* Mobile Drawer */}
+      <main className="relative md:flex h-screen">
+        {/* mobile drawer (the thing that you click to close the sidebar on mobile) */}
         <div
           className={clsx(
             "fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden",
@@ -227,11 +218,12 @@ export default function AuthenticatedApp() {
           />
         </div>
 
-        {/* Desktop Sidebar */}
+        {/* desktop sidebar */}
         <div
           className={clsx(
             "hidden md:block border-r h-full overflow-y-auto transition-all duration-300 bg-tertiary",
             {
+              // this is 100x spacing (about 400px), NOT 100% width
               "w-100 p-4": isDesktopSidebarOpen,
               "w-0 p-0 border-0": !isDesktopSidebarOpen,
             },
@@ -255,16 +247,8 @@ export default function AuthenticatedApp() {
           }
         </div>
 
-        {/* Main Content */}
-        <div
-          className={clsx(
-            "flex flex-col w-full h-full transition-all duration-300",
-            {
-              "md:w-screen": isDesktopSidebarOpen,
-              "md:w-full": !isDesktopSidebarOpen,
-            },
-          )}
-        >
+        {/* main content (status bar and list/gantt editor) */}
+        <div className="flex flex-col w-full h-full transition-all duration-300 md:w-screen">
           <StatusBar
             isDesktopSidebarOpen={isDesktopSidebarOpen}
             setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
@@ -301,10 +285,7 @@ export default function AuthenticatedApp() {
         {isSettingsOpen && (
           <Settings
             selectedListId={selectedListId}
-            onClose={() => {
-              console.log("onClose called");
-              setIsSettingsOpen(false);
-            }}
+            onClose={() => setIsSettingsOpen(false)}
           />
         )}
       </AnimatePresence>
