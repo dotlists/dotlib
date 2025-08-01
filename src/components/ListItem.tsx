@@ -176,7 +176,7 @@ export function ListItem({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ layout: { duration: 0.2, ease: "easeOut" } }}
-      className="flex flex-col hover:bg-muted/50 rounded-lg my-1 p-1"
+      className="flex flex-col transition-all hover:bg-muted/50 rounded-lg my-1 p-1"
       key={node.uuid}
       id={node.uuid}
     >

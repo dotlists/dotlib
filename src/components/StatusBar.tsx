@@ -113,7 +113,7 @@ export function StatusBar({
           )}
           <Input
             id="list-name-input"
-            className="w-full text-xl pl-2 pr-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30 shadow-none"
+            className="w-full text-xl pl-2 pr-0 border-none transition-all bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30 shadow-none"
             value={listName}
             onChange={(e) => setListName(e.target.value)}
             onBlur={(e) => handleListNameChange(e.target.value)}

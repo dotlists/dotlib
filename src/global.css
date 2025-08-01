@@ -106,6 +106,7 @@
 
 @layer base {
   :root, .light {
+    color-scheme: light;
     --background: hsl(49 80% 89%); /* #fbf1c7 */
     --tertiary: hsl(49 80 89);
     --foreground: hsl(20 5% 23%); /* #3c3836 */
@@ -202,6 +203,7 @@
   }
 
   .blue {
+    color-scheme: light;
     --background: hsl(0 0% 100%);
     --tertiary: hsl(0 0% 100%);
     --foreground: hsl(222.2 84% 4.9%);
@@ -225,6 +227,7 @@
   }
 
   .monochrome {
+    color-scheme: light;
     --background: hsl(0 0% 100%);
     --tertiary: hsl(0 0% 100%);
     --foreground: hsl(0 0% 3.9%);
@@ -287,6 +290,7 @@
   * {
     @apply border-border;
     scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--background);
   }
 
   html {
