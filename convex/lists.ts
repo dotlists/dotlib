@@ -10,6 +10,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { type Id } from "./_generated/dataModel";
 
+
 export const getList = internalQuery({
   args: { listId: v.id("lists") },
   handler: async (ctx, args) => {
