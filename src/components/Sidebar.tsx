@@ -85,8 +85,8 @@ export function Sidebar ({
                 : "hover:bg-accent/30"
             )}
             onClick={() => {
-              setSelectedListId(list.id);
-              setListName(list.name);
+              const navigate = useNavigate();
+              navigate({ to: '/app/list/$listId', params: { listId: list.id } });
               setIsMobileDrawerOpen(false);
             }}
           >

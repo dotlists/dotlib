@@ -139,9 +139,11 @@ export function StatusBar({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => runSync({
-              listId: selectedListId == null ? undefined : selectedListId,
-            })}
+            onClick={() => {
+              if (selectedListId) {
+                runSync({ listId: selectedListId });
+              }
+            }}
           >
             <GithubIcon />
           </Button>
