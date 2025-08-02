@@ -42,7 +42,6 @@ interface StatusBarProps {
   handleCreateList: () => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
-  onSettingsClick: () => void;
 }
 
 export function StatusBar({
@@ -58,7 +57,6 @@ export function StatusBar({
   handleCreateList,
   viewMode,
   setViewMode,
-  onSettingsClick,
 }: StatusBarProps) {
   const { isSimpleMode } = useSettings();
   const selectedList = lists.find((list) => list.id === selectedListId);
@@ -135,7 +133,6 @@ export function StatusBar({
               </>
             )}
           </div>
-          <Notifications />
           <Button
             variant="ghost"
             size="icon"
@@ -146,9 +143,6 @@ export function StatusBar({
             }}
           >
             <GithubIcon />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onSettingsClick}>
-            <SettingsIcon className="h-5 w-5" />
           </Button>
           {isSimpleMode && (
             <DropdownMenu>

@@ -216,6 +216,7 @@ function AppLayout() {
             handleDeleteList={handleDeleteList}
             handleCreateList={handleCreateList}
             isSimpleMode={isSimpleMode}
+            onSettingsClick={() => navigate({ to: '/app/settings' })}
           />
         </div>
 
@@ -242,6 +243,7 @@ function AppLayout() {
               handleDeleteList={handleDeleteList}
               handleCreateList={handleCreateList}
               isSimpleMode={isSimpleMode}
+              onSettingsClick={() => navigate({ to: '/app/settings' })}
             />
           }
         </div>
@@ -268,7 +270,6 @@ function AppLayout() {
             handleCreateList={() => handleCreateList()}
             viewMode={viewMode}
             setViewMode={setViewMode}
-            onSettingsClick={() => navigate({ to: '/app/settings' })}
           />
           <div className="flex-grow overflow-y-auto px-4 mt-16">
             <Outlet />
