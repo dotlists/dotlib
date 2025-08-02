@@ -67,7 +67,7 @@ function DeleteConfirmation({ onClose }: DeleteConfirmationProps) {
               deleteAccount();
               signOut();
             }}
-            className="ml-6"
+            className="ml-6 cursor-pointer"
           >
             delete account
           </Button>
@@ -106,10 +106,8 @@ export function AccountSettings() {
             variant={"destructive"}
             onClick={() => {
               setIsDeleteConfirmationOpen(true);
-              // open a menu that brings up a prompt saying smth like "are you sure" before deleting account and signing out
-              // deleteAccount();
-              // signOut();
             }}
+            className="cursor-pointer"
           >
             delete account
           </Button>
