@@ -1,11 +1,29 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
 import { ConvexReactClient } from "convex/react";
 import SettingsProvider from "./contexts/SettingsProvider";
 import { ThemeProvider } from "./contexts/ThemeProvider";
 import "./global.css";
+import { RouterProvider, createRouter } from '@tanstack/react-router'
+
+// Import the generated route tree
+import { routeTree } from './routeTree.gen'
+
+// Create a new router instance
+export const router = createRouter({ 
+  routeTree,
+  context: {
+    auth: undefined!
+  }
+})
+
+// Register the router instance for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
+}
 
 const convexURL = import.meta.env.VITE_CONVEX_URL;
 
@@ -22,7 +40,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ConvexAuthProvider client={convex}>
       <ThemeProvider>
         <SettingsProvider>
-          <App />
+          <RouterProvider router={router} />
         </SettingsProvider>
       </ThemeProvider>
     </ConvexAuthProvider>

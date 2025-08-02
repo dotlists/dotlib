@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "./ui/dropdown-menu";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
@@ -56,7 +57,9 @@ export function Sidebar ({
     <>
       <div className="container mb-2 -mt-1 not-last:flex flex-row">
         <div className="container -ml-17 flex items-center">
-          <img src="/favicon.ico" alt="logo" className="size-7 mr-2" />
+          <Link to="/" className="border-0">
+            <img src="/favicon.ico" alt="logo" className="size-7 mr-2 cursor-pointer" />
+          </Link>
           <span className="font-bold text-lg font-heading pt-0.5">dotlists</span>
         </div>
         <Button
