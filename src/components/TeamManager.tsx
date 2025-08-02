@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import type { Doc } from "@/lib/convex";
 import { ChevronDown, ChevronRight, List, Plus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 interface TeamManagerProps {
   teams: (Doc<"teams"> & { role: string })[];
@@ -80,7 +81,7 @@ export function TeamManager({
         team ? (
           <div key={team._id} className="mb-0">
             <div 
-              className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
+              className="flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
               onClick={() => toggleTeamExpand(team._id)}
             >
               {expandedTeamIds.has(team._id)  ? (
@@ -115,11 +116,11 @@ export function TeamManager({
                       .map((list) => (
                         <li
                           key={list._id}
-                          className={`flex items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded hover:bg-accent/30 ${
+                          className={clsx("flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded",
                             selectedListId === list._id
                               ? "bg-muted/50 text-muted-foreground"
-                              : ""
-                          }`}
+                              : "hover:bg-accent/30"
+                          )}
                           onClick={() => {
                             setSelectedListId(list._id);
                             setListName(list.name);
@@ -143,7 +144,7 @@ export function TeamManager({
                         </li>
                       ))}
                     <li
-                      className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded hover:bg-accent/30"
+                      className="flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded hover:bg-accent/30"
                       onClick={() => handleCreateList(team._id)}
                     >
                       <Plus className="size-4 mr-3" />
@@ -185,7 +186,7 @@ export function TeamManager({
         className="my-2 bg-input/30"
       />
       <div
-        className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
+        className="flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
         onClick={handleCreateTeam}
       >
         <Plus className="size-4 mr-3" />

@@ -2,6 +2,7 @@ import { ChevronsLeft, List, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { TeamManager } from "./TeamManager";
 import type { Doc, Id } from "@/lib/convex";
+import clsx from "clsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,7 +68,7 @@ export function Sidebar ({
           <ChevronsLeft className="h-5 w-5" />
         </Button>
       </div>
-      <hr className="mt-2 mb-0 border-accent border-b max-h-0.5" />
+      <hr className="mt-2 mb-0 bg-accent border-accent border-b max-h-0.5" />
       <div className="flex items-center justify-between pt-3">
         <h2 className="text-base font-subheading">personal lists</h2>
       </div>
@@ -75,11 +76,11 @@ export function Sidebar ({
         {personalLists.map((list) => (
           <li
             key={list.id}
-            className={`flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30 ${
+            className={clsx("flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded",
               selectedListId === list.id
                 ? "bg-muted/50 text-muted-foreground"
-                : ""
-            }`}
+                : "hover:bg-accent/30"
+            )}
             onClick={() => {
               setSelectedListId(list.id);
               setListName(list.name);
@@ -111,7 +112,7 @@ export function Sidebar ({
           </li>
         ))}
         <li
-          className="flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
+          className="transition-all flex items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded hover:bg-accent/30"
           onClick={() => handleCreateList()}
         >
           <Plus className="size-4 mr-3" />
@@ -122,7 +123,7 @@ export function Sidebar ({
       {/* team sidebar */}
       {!isSimpleMode && (
         <>
-          <hr className="mt-2 mb-0 border-accent border-b max-h-0.5" />
+          <hr className="mt-2 mb-0 bg-accent border-accent border-b max-h-0.5" />
           <div className="flex items-center justify-between pt-3 mb-2.5">
             <h2 className="text-base font-subheading">teams</h2>
           </div>

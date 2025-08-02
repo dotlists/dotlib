@@ -3,7 +3,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { setCookie, getCookie } from '@/lib/utils';
 import { ThemeContext } from './ThemeContextDef';
 
-type Theme = "light" | "dark" | "gruvbox" | "blue" | "monochrome";
+type Theme = "light" | "dark" | "midnight" | "gruvbox" | "blue" | "monochrome";
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('light');

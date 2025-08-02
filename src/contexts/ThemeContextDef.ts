@@ -1,7 +1,7 @@
 // src/contexts/ThemeContextDef.ts
 import { createContext } from 'react';
 
-type Theme = "light" | "dark" | "gruvbox" | "blue" | "monochrome";
+type Theme = "light" | "dark" | "midnight" | "gruvbox" | "blue" | "monochrome";
 
 interface ThemeContextType {
   theme: Theme;

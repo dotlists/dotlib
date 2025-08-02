@@ -1,5 +1,3 @@
-
-
 import { api, type Doc, type Id } from "@/lib/convex";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -22,7 +20,6 @@ import {
   Settings as SettingsIcon,
   GithubIcon,
 } from "lucide-react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation } from "convex/react";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
@@ -63,7 +60,6 @@ export function StatusBar({
   setViewMode,
   onSettingsClick,
 }: StatusBarProps) {
-  const { signOut } = useAuthActions();
   const { isSimpleMode } = useSettings();
   const selectedList = lists.find((list) => list.id === selectedListId);
   const runSync = useMutation(api.github.runGithubSync);
@@ -113,7 +109,7 @@ export function StatusBar({
           )}
           <Input
             id="list-name-input"
-            className="w-full text-xl pl-2 pr-0 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30 shadow-none"
+            className="w-full text-xl pl-2 pr-0 border-none transition-all bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-heading hover:bg-input/30 shadow-none"
             value={listName}
             onChange={(e) => setListName(e.target.value)}
             onBlur={(e) => handleListNameChange(e.target.value)}
@@ -152,43 +148,42 @@ export function StatusBar({
           <Button variant="ghost" size="icon" onClick={onSettingsClick}>
             <SettingsIcon className="h-5 w-5" />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="!ring-none !border-none !outline-none"
-                size="icon"
-                tabIndex={-1}
-              >
-                <ChevronDown className="w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="p-3 rounded-lg">
-              {isSimpleMode && (
-                <>
-                  {lists.map((list) => (
-                    <DropdownMenuItem
-                      key={list.id}
-                      onClick={() => {
-                        setSelectedListId(list.id);
-                        setListName(list.name);
-                      }}
-                    >
-                      {list.name}
+          {isSimpleMode && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="!ring-none !border-none !outline-none"
+                  size="icon"
+                  tabIndex={-1}
+                >
+                  <ChevronDown className="w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="p-3 rounded-lg">
+                {isSimpleMode && (
+                  <>
+                    {lists.map((list) => (
+                      <DropdownMenuItem
+                        key={list.id}
+                        onClick={() => {
+                          setSelectedListId(list.id);
+                          setListName(list.name);
+                        }}
+                      >
+                        {list.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleCreateList}>
+                      create new list
                     </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleCreateList}>
-                    create new list
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem key="log-out" onClick={signOut}>
-                log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
         <div className="flex h-12 w-full rounded-b-xl overflow-hidden">
           <div
