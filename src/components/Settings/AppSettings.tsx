@@ -1,23 +1,16 @@
-import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
-import { useTheme } from "@/hooks/useTheme";
 import { useSettings } from "@/contexts/SettingsContext";
 import { api } from "@/lib/convex";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { useMemo } from "react";
 import { ShareLinkComponent } from "../ui/ShareLink";
 
-const THEMES = ["light", "dark", "midnight", "gruvbox", "blue", "monochrome"];
 
 export function AppSettings() {
-  const { theme, setTheme } = useTheme();
   const { isSimpleMode, setIsSimpleMode } = useSettings();
 
-  const generateAuthKey = useMutation(api.auth.generateAuthKey);
-  const getAuthKey = useQuery(api.auth.getAuthKey);
   const user = useQuery(api.main.getMyUserProfile);
-
   const calendarUrl = useMemo(() => {
     if (!user) return "";
     let convex_url = import.meta.env.VITE_CONVEX_URL;
@@ -29,39 +22,10 @@ export function AppSettings() {
 
   return (
     <>
-      {/* theme switcher */}
-      <div>
-        <h3 className="text-lg font-medium">theme</h3>
-        <p className="text-sm text-muted-foreground">
-          select a color theme for the application.
-        </p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {THEMES.map((themeName) => (
-            <Button
-              key={themeName}
-              variant={theme === themeName ? "secondary" : "outline"}
-              onClick={() =>
-                setTheme(
-                  themeName as
-                    | "light"
-                    | "dark"
-                    | "midnight"
-                    | "gruvbox"
-                    | "blue"
-                    | "monochrome",
-                )
-              }
-              className="capitalize"
-            >
-              {themeName}
-            </Button>
-          ))}
-        </div>
-      </div>
       {/* simple mode */}
       <div>
         <h3 className="text-lg font-medium">simple mode</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mt-0">
           hide advanced features for a cleaner interface.
         </p>
         <div className="flex items-center space-x-2 mt-2">
@@ -98,25 +62,6 @@ export function AppSettings() {
         </div>
         <div className="mt-2">
           <ShareLinkComponent link={calendarUrl} />
-        </div>
-      </div>
-      {/* authentication key */}
-      <div>
-        <h3 className="text-lg font-medium">authentication key</h3>
-        <p className="text-sm text-muted-foreground">
-          generate a temporary key to authenticate external applications.
-        </p>
-        <div className="flex items-center space-x-2 mt-2">
-          <Button
-            key="generate-auth"
-            variant="default"
-            onClick={() => generateAuthKey()}
-          >
-            generate key
-          </Button>
-          <Label htmlFor="generate-auth">
-            {getAuthKey === undefined ? "" : getAuthKey}
-          </Label>
         </div>
       </div>
     </>

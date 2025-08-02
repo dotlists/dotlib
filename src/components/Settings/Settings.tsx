@@ -6,13 +6,15 @@ import { AppSettings } from "./AppSettings";
 import { AdvancedSettings } from "./AdvancedSettings";
 import { SettingsSidebar } from "./SettingsSidebar";
 import { useState } from "react";
+import { AccountSettings } from "./AccountSettings";
+import { ThemeSettings } from "./ThemeSettings";
 
 interface SettingsProps {
   onClose: () => void;
   selectedListId: Id<"lists"> | null;
 }
 
-export type SettingsPanels = "app" | "advanced"
+export type SettingsPanels = "account" | "app" | "theme" | "advanced"
 
 export function Settings({ onClose, selectedListId }: SettingsProps) {
   const [activePanel, setActivePanel] = useState<SettingsPanels>("app");
@@ -59,7 +61,9 @@ export function Settings({ onClose, selectedListId }: SettingsProps) {
             setActivePanel={setActivePanel}
           />
           <div className="space-y-6 h-full w-full border-l p-6 overflow-y-auto">
+            {activePanel === "account" && <AccountSettings />}
             {activePanel === "app" && <AppSettings />}
+            {activePanel === "theme" && <ThemeSettings />}
             {activePanel === "advanced" && <AdvancedSettings selectedListId={selectedListId}/>}
           </div>
         </div>

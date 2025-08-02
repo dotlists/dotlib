@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import type { Doc } from "@/lib/convex";
 import { ChevronDown, ChevronRight, List, Plus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 interface TeamManagerProps {
   teams: (Doc<"teams"> & { role: string })[];
@@ -115,11 +116,11 @@ export function TeamManager({
                       .map((list) => (
                         <li
                           key={list._id}
-                          className={`flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded ${
+                          className={clsx("flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 ml-7 rounded",
                             selectedListId === list._id
                               ? "bg-muted/50 text-muted-foreground"
                               : "hover:bg-accent/30"
-                          }`}
+                          )}
                           onClick={() => {
                             setSelectedListId(list._id);
                             setListName(list.name);

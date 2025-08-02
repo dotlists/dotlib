@@ -223,8 +223,7 @@ export default function AuthenticatedApp() {
           className={clsx(
             "hidden md:block border-r h-full overflow-y-auto transition-all duration-300 bg-tertiary",
             {
-              // this is 100x spacing (about 400px), NOT 100% width
-              "w-100 p-4": isDesktopSidebarOpen,
+              "w-80 p-4": isDesktopSidebarOpen,
               "w-0 p-0 border-0": !isDesktopSidebarOpen,
             },
           )}
@@ -248,7 +247,15 @@ export default function AuthenticatedApp() {
         </div>
 
         {/* main content (status bar and list/gantt editor) */}
-        <div className="flex flex-col w-full h-full transition-all duration-300 md:w-screen">
+        <div 
+          className={clsx(
+            "flex flex-col w-full h-full transition-all duration-300",
+            {
+              "md:w-[calc(100%-20rem)]": isDesktopSidebarOpen,
+              "md:w-screen": !isDesktopSidebarOpen,
+            },
+          )}
+        >
           <StatusBar
             isDesktopSidebarOpen={isDesktopSidebarOpen}
             setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}

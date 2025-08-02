@@ -2,6 +2,7 @@ import { ChevronsLeft, List, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { TeamManager } from "./TeamManager";
 import type { Doc, Id } from "@/lib/convex";
+import clsx from "clsx";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,11 +76,11 @@ export function Sidebar ({
         {personalLists.map((list) => (
           <li
             key={list.id}
-            className={`flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded ${
+            className={clsx("flex transition-all items-center justify-start text-start cursor-pointer p-1.5 m-0 rounded",
               selectedListId === list.id
                 ? "bg-muted/50 text-muted-foreground"
                 : "hover:bg-accent/30"
-            }`}
+            )}
             onClick={() => {
               setSelectedListId(list.id);
               setListName(list.name);
