@@ -1,5 +1,5 @@
-import { createFileRoute, useParams } from '@tanstack/react-router';
-import { useContext, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useContext } from 'react';
 import { AppContext } from './app';
 import { ListEditor } from '@/components/ListEditor';
 import { GanttView } from '@/components/GanttView';
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/app/list/$listId')({
 });
 
 function ListPageComponent() {
-  const { listId } = useParams({ from: Route.id });
+  const { listId } = Route.useParams();
   const { isSimpleMode } = useSettings();
   const { 
     selectedList, 
@@ -39,7 +39,7 @@ function ListPageComponent() {
         />
       )}
       {viewMode === "gantt" && !isSimpleMode && (
-        <GanttView listId={listId} />
+        <GanttView listId={selectedList._id} />
       )}
     </>
   );

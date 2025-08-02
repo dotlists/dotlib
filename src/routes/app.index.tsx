@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useQuery } from 'convex/react';
 import { api } from '@/lib/convex';
-import React, { useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppContext } from './app';
 
