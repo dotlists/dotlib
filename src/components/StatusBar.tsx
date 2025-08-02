@@ -20,7 +20,6 @@ import {
   Settings as SettingsIcon,
   GithubIcon,
 } from "lucide-react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useMutation } from "convex/react";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
@@ -61,7 +60,6 @@ export function StatusBar({
   setViewMode,
   onSettingsClick,
 }: StatusBarProps) {
-  const { signOut } = useAuthActions();
   const { isSimpleMode } = useSettings();
   const selectedList = lists.find((list) => list.id === selectedListId);
   const runSync = useMutation(api.github.runGithubSync);

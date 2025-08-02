@@ -188,3 +188,135 @@ export const createUserProfile = mutation({
     return userProfile;
   },
 });
+
+export const deleteUserProfile = mutation({
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Get all teams user is a part of
+    const teamMemberships = await ctx.db
+      .query("team_members")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    // Get personal lists
+    const personalLists = await ctx.db
+      .query("lists")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((q) => q.eq(q.field("teamId"), undefined))
+      .collect();
+
+    // Get team lists if the user is the only one in the team
+    const teamLists = (
+      await Promise.all(
+        teamMemberships.map(async (membership) => {
+          const members = await ctx.db
+            .query("team_members")
+            .withIndex("by_team", (q) => q.eq("teamId", membership.teamId))
+            .collect();
+
+          // Check if this user is the only one in the team
+          if (members.length === 1 && members[0].userId === userId) {
+            // Delete the team
+            await ctx.db.delete(membership.teamId);
+            // Return all the team's lists to be deleted
+            return await ctx.db
+              .query("lists")
+              .withIndex("by_team", (q) => q.eq("teamId", membership.teamId))
+              .collect();
+          }
+
+          // Find the next member in the team
+          const otherMember =
+            members.find((m) => m.userId !== userId && m.role === "admin") ??
+            members.find((m) => m.userId !== userId && m.role === "member");
+          if (!otherMember) return []; // fallback
+
+          // Get all lists for the team
+          const lists = await ctx.db
+            .query("lists")
+            .withIndex("by_team", (q) => q.eq("teamId", membership.teamId))
+            .collect();
+
+          // Make other member owner of all the team lists
+          for (const list of lists) {
+            await ctx.db.patch(list._id, {
+              userId: otherMember.userId,
+            });
+          }
+
+          // Make other member team owner and admin
+          await ctx.db.patch(membership.teamId, {
+            ownerId: otherMember.userId,
+          });
+          await ctx.db.patch(membership._id, {
+            role: "admin",
+          });
+
+          // User is not the only one in the team
+          return [];
+        }),
+      )
+    ).flat();
+
+    const allLists = [...personalLists, ...teamLists];
+
+    // Delete all lists and items
+    for (const list of allLists) {
+      // remove items first
+      const items = await ctx.db
+        .query("items")
+        .withIndex("by_list", (q) => q.eq("listId", list._id))
+        .collect();
+
+      for (const item of items) {
+        await ctx.db.delete(item._id);
+      }
+
+      // then the list
+      await ctx.db.delete(list._id);
+    }
+
+    // Remove user from all teams
+    for (const team of teamMemberships) {
+      const membership = await ctx.db
+        .query("team_members")
+        .withIndex("by_team_user", (q) =>
+          q.eq("teamId", team.teamId).eq("userId", userId),
+        )
+        .first();
+
+      if (membership) {
+        await ctx.db.delete(membership._id);
+      }
+    }
+
+    // Get all profiles of a user id (there should only be one but we have to be sure)
+    const profiles = await ctx.db
+      .query("user_profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+    
+    // Delete all user profiles
+    for (const profile of profiles) {
+      await ctx.db.delete(profile._id);
+    }
+
+    // Get all auth accounts of a user
+    const auth_accounts = await ctx.db
+      .query("authAccounts")
+      .withIndex("userIdAndProvider", (q) => q.eq("userId", userId))
+      .collect();
+    
+    // Delete all auth accounts
+    for (const account of auth_accounts) {
+      await ctx.db.delete(account._id);
+    }
+
+    // Delete the user object
+    await ctx.db.delete(userId);
+  },
+});
