@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
-import { Notifications } from "./Notifications";
 import { useSettings } from "@/contexts/SettingsContext";
 
 import {
@@ -17,7 +16,6 @@ import {
   Menu,
   List,
   BarChart3,
-  Settings as SettingsIcon,
   GithubIcon,
 } from "lucide-react";
 import { useMutation } from "convex/react";

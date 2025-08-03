@@ -1,5 +1,4 @@
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { useConvexAuth } from "convex/react";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { ConvexReactClient } from "convex/react";
@@ -14,9 +13,6 @@ import { routeTree } from './routeTree.gen'
 // Create a new router instance
 export const router = createRouter({ 
   routeTree,
-  context: {
-    auth: undefined!
-  }
 })
 
 // Register the router instance for type safety
@@ -36,17 +32,12 @@ if (!convexURL) {
 
 const convex = new ConvexReactClient(convexURL);
 
-function InnerApp() {
-  const auth = useConvexAuth();
-  return <RouterProvider router={router} context={{ auth }} />;
-}
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ConvexAuthProvider client={convex}>
       <ThemeProvider>
         <SettingsProvider>
-          <InnerApp />
+          <RouterProvider router={router} />
         </SettingsProvider>
       </ThemeProvider>
     </ConvexAuthProvider>

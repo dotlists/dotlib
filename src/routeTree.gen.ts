@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppListListIdRouteImport } from './routes/app.list.$listId'
 
 const AppRoute = AppRouteImport.update({
@@ -30,11 +29,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppListListIdRoute = AppListListIdRouteImport.update({
   id: '/list/$listId',
   path: '/list/$listId',
@@ -44,13 +38,11 @@ const AppListListIdRoute = AppListListIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/app/list/$listId': typeof AppListListIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
   '/app/list/$listId': typeof AppListListIdRoute
 }
@@ -58,22 +50,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
-  '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/app/list/$listId': typeof AppListListIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/app/settings' | '/app/' | '/app/list/$listId'
+  fullPaths: '/' | '/app' | '/app/' | '/app/list/$listId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app/settings' | '/app' | '/app/list/$listId'
-  id:
-    | '__root__'
-    | '/'
-    | '/app'
-    | '/app/settings'
-    | '/app/'
-    | '/app/list/$listId'
+  to: '/' | '/app' | '/app/list/$listId'
+  id: '__root__' | '/' | '/app' | '/app/' | '/app/list/$listId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,13 +89,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/settings': {
-      id: '/app/settings'
-      path: '/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/list/$listId': {
       id: '/app/list/$listId'
       path: '/list/$listId'
@@ -122,13 +100,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppListListIdRoute: typeof AppListListIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppListListIdRoute: AppListListIdRoute,
 }

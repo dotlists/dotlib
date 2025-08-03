@@ -10,6 +10,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { createFileRoute, Outlet, useNavigate, useParams } from '@tanstack/react-router';
 import { useConvexAuth } from 'convex/react';
 import { LandingPage } from '@/components/LandingPage';
+import { Settings } from "@/components/Settings/Settings";
+import { AnimatePresence } from "framer-motion";
 
 type ViewMode = "list" | "gantt";
 
@@ -17,9 +19,9 @@ export const Route = createFileRoute('/app')({
   component: AppLayout,
 });
 
-type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
+export type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
-type ConvexList = Doc<"lists"> & {
+export type ConvexList = Doc<"lists"> & {
   id: Id<"lists">;
   nodes: ConvexItem[];
 };
@@ -27,6 +29,7 @@ type ConvexList = Doc<"lists"> & {
 interface AppContextType {
   lists: ConvexList[];
   selectedList: ConvexList | undefined;
+  selectedListId: Id<"lists"> | null;
   handleUpdateItem: (id: Id<"items">, updates: Partial<Doc<"items">>) => Promise<void>;
   handleAddItem: (text: string, state?: "red" | "yellow" | "green") => Promise<void>;
   handleDeleteItem: (id: Id<"items">) => Promise<void>;
@@ -64,6 +67,7 @@ function AppLayout() {
 
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(!isSimpleMode);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [focusedItemId, setFocusedItemId] = useState<Id<"items"> | null>(null);
 
@@ -182,7 +186,7 @@ function AppLayout() {
   const validTeams = teams?.filter(Boolean) as (Doc<"teams"> & { role: string })[] | undefined;
 
   return (
-    <AppContext.Provider value={{ lists, selectedList, handleUpdateItem, handleAddItem, handleDeleteItem, focusedItemId, setFocusedItemId, handleCreateList, viewMode, setViewMode }}>
+    <AppContext.Provider value={{ lists, selectedList, selectedListId, handleUpdateItem, handleAddItem, handleDeleteItem, focusedItemId, setFocusedItemId, handleCreateList, viewMode, setViewMode }}>
       <main className="relative md:flex h-screen">
         <div
           className={clsx(
@@ -216,7 +220,7 @@ function AppLayout() {
             handleDeleteList={handleDeleteList}
             handleCreateList={handleCreateList}
             isSimpleMode={isSimpleMode}
-            onSettingsClick={() => navigate({ to: '/app/settings' })}
+            onSettingsClick={() => setIsSettingsOpen(true)}
           />
         </div>
 
@@ -243,7 +247,7 @@ function AppLayout() {
               handleDeleteList={handleDeleteList}
               handleCreateList={handleCreateList}
               isSimpleMode={isSimpleMode}
-              onSettingsClick={() => navigate({ to: '/app/settings' })}
+              onSettingsClick={() => setIsSettingsOpen(true)}
             />
           }
         </div>
@@ -275,6 +279,14 @@ function AppLayout() {
             <Outlet />
           </div>
         </div>
+        {isSettingsOpen && (
+          <AnimatePresence>
+            <Settings
+              onClose={() => setIsSettingsOpen(false)}
+              selectedListId={selectedListId ?? null}
+            />
+          </AnimatePresence>
+        )}
       </main>
       <Toaster />
     </AppContext.Provider>

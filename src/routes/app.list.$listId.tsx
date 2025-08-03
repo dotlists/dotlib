@@ -4,6 +4,7 @@ import { AppContext } from './app';
 import { ListEditor } from '@/components/ListEditor';
 import { GanttView } from '@/components/GanttView';
 import { useSettings } from '@/contexts/SettingsContext';
+import type { Id } from '@/lib/convex';
 
 export const Route = createFileRoute('/app/list/$listId')({
   component: ListPageComponent,
@@ -12,7 +13,7 @@ export const Route = createFileRoute('/app/list/$listId')({
 function ListPageComponent() {
   const { listId } = Route.useParams();
   const { isSimpleMode } = useSettings();
-  const { 
+  const {
     selectedList, 
     handleUpdateItem, 
     handleAddItem, 
@@ -39,7 +40,7 @@ function ListPageComponent() {
         />
       )}
       {viewMode === "gantt" && !isSimpleMode && (
-        <GanttView listId={selectedList._id} />
+        <GanttView listId={listId as Id<"lists">} />
       )}
     </>
   );
