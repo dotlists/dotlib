@@ -45,6 +45,11 @@ export const AppContext = React.createContext<AppContextType>(null!);
 function AppLayout() {
   const { isAuthenticated } = useConvexAuth();
   const navigate = useNavigate();
+
+  if (!isAuthenticated) {
+    navigate({ to: "/" });
+  }
+
   const params = useParams({ strict: false });
   const selectedListId = params?.listId as Id<"lists"> | null ?? null;
 

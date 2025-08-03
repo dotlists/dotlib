@@ -13,14 +13,14 @@ export function SignIn() {
       {!isLoading && !isAuthenticated && (
         <div className="flex flex-col gap-4 w-full">
           <Button 
-            onClick={() => void signIn("github", { redirectTo: "/app" })}
+            onClick={() => void signIn("github", { redirectTo: "/" })}
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg flex items-center justify-center gap-3 text-lg font-medium transition-colors"
           >
             <Github size={24} />
             continue with github
           </Button>
           <Button 
-            onClick={() => void signIn("google", { redirectTo: "/app" })}
+            onClick={() => void signIn("google", { redirectTo: "/" })}
             className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg flex items-center justify-center gap-3 text-lg font-medium transition-colors"
           >
             <Chrome size={24} />
