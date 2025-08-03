@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
-import { Notifications } from "./Notifications";
 import { useSettings } from "@/contexts/SettingsContext";
 
 import {
@@ -17,7 +16,6 @@ import {
   Menu,
   List,
   BarChart3,
-  Settings as SettingsIcon,
   GithubIcon,
 } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -42,7 +40,6 @@ interface StatusBarProps {
   handleCreateList: () => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
-  onSettingsClick: () => void;
 }
 
 export function StatusBar({
@@ -58,7 +55,6 @@ export function StatusBar({
   handleCreateList,
   viewMode,
   setViewMode,
-  onSettingsClick,
 }: StatusBarProps) {
   const { isSimpleMode } = useSettings();
   const selectedList = lists.find((list) => list.id === selectedListId);
@@ -135,18 +131,16 @@ export function StatusBar({
               </>
             )}
           </div>
-          <Notifications />
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => runSync({
-              listId: selectedListId == null ? undefined : selectedListId,
-            })}
+            onClick={() => {
+              if (selectedListId) {
+                runSync({ listId: selectedListId });
+              }
+            }}
           >
             <GithubIcon />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onSettingsClick}>
-            <SettingsIcon className="h-5 w-5" />
           </Button>
           {isSimpleMode && (
             <DropdownMenu>

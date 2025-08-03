@@ -1,36 +1,57 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { StatusBar } from "./components/StatusBar";
-import { ListEditor } from "./components/ListEditor";
-import { CreateUsername } from "./components/CreateUsername";
-import { GanttView } from "./components/GanttView";
-import { Settings } from "./components/Settings/Settings";
+import { StatusBar } from "@/components/StatusBar";
+import { CreateUsername } from "@/components/CreateUsername";
 import clsx from "clsx";
-import { useSettings } from "./contexts/SettingsContext";
-import { AnimatePresence } from "framer-motion";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Toaster } from "sonner";
 import { api, type Id, type Doc } from "@/lib/convex";
-import { Button } from "./components/ui/button";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar } from "@/components/Sidebar";
+import { createFileRoute, Outlet, useNavigate, useParams } from '@tanstack/react-router';
+import { useConvexAuth } from 'convex/react';
+import { LandingPage } from '@/components/LandingPage';
+import { Settings } from "@/components/Settings/Settings";
+import { AnimatePresence } from "framer-motion";
 
-type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
+type ViewMode = "list" | "gantt";
 
-type ConvexList = Doc<"lists"> & {
+export const Route = createFileRoute('/app')({
+  component: AppLayout,
+});
+
+export type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
+
+export type ConvexList = Doc<"lists"> & {
   id: Id<"lists">;
   nodes: ConvexItem[];
 };
 
-type ViewMode = "list" | "gantt";
+interface AppContextType {
+  lists: ConvexList[];
+  selectedList: ConvexList | undefined;
+  selectedListId: Id<"lists"> | null;
+  handleUpdateItem: (id: Id<"items">, updates: Partial<Doc<"items">>) => Promise<void>;
+  handleAddItem: (text: string, state?: "red" | "yellow" | "green") => Promise<void>;
+  handleDeleteItem: (id: Id<"items">) => Promise<void>;
+  focusedItemId: Id<"items"> | null;
+  setFocusedItemId: (id: Id<"items"> | null) => void;
+  handleCreateList: (teamId?: Id<"teams">) => Promise<void>;
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+}
 
-export default function AuthenticatedApp() {
+export const AppContext = React.createContext<AppContextType>(null!);
+
+function AppLayout() {
+  const { isAuthenticated } = useConvexAuth();
+  const navigate = useNavigate();
+  const params = useParams({ strict: false });
+  const selectedListId = params?.listId as Id<"lists"> | null ?? null;
+
   const { isSimpleMode } = useSettings();
   const userProfile = useQuery(api.main.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
-
-  const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
-    null,
-  );
 
   const items = useQuery(
     api.lists.getItems,
@@ -46,8 +67,9 @@ export default function AuthenticatedApp() {
 
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(!isSimpleMode);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [focusedItemId, setFocusedItemId] = useState<Id<"items"> | null>(null);
 
   const lists: ConvexList[] = useMemo(
     () =>
@@ -69,11 +91,16 @@ export default function AuthenticatedApp() {
   const teamLists = lists.filter((list) => list.teamId);
 
   const [listName, setListName] = useState<string>("");
-  const [focusedItemId, setFocusedItemId] = useState<Id<"items"> | null>(null);
 
   const selectedList = lists.find(
     (list: ConvexList) => list.id === selectedListId,
   );
+
+  useEffect(() => {
+    if (selectedList) {
+      setListName(selectedList.name);
+    }
+  }, [selectedList]);
 
   const handleListNameChange = (name: string) => {
     if (selectedListId && name) {
@@ -84,11 +111,10 @@ export default function AuthenticatedApp() {
   const handleCreateList = useCallback(async (teamId?: Id<"teams">) => {
     const result = await createList({ name: "New List", teamId });
     if (result) {
-      setSelectedListId(result);
-      setListName("New List");
+      navigate({ to: '/app/list/$listId', params: { listId: result } });
       setIsMobileDrawerOpen(false);
     }
-  }, [createList]);
+  }, [createList, navigate]);
 
   const handleAddItem = useCallback(async (
     text: string,
@@ -116,24 +142,13 @@ export default function AuthenticatedApp() {
     if (selectedListId === id) {
       const newSelectedList = lists.find((l) => l.id !== id);
       if (newSelectedList) {
-        setSelectedListId(newSelectedList.id);
-        setListName(newSelectedList.name);
+        navigate({ to: '/app/list/$listId', params: { listId: newSelectedList.id } });
       } else {
-        setSelectedListId(null);
-        setListName("");
+        navigate({ to: '/app' });
       }
     }
   };
 
-  // auto open the first list
-  useEffect(() => {
-    if (lists.length > 0 && (!selectedListId || !lists.some(list => list.id === selectedListId))) {
-      setSelectedListId(lists[0].id);
-      setListName(lists[0].name);
-    }
-  }, [lists, selectedListId]);
-
-  // keybinds
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === "L") {
@@ -152,7 +167,10 @@ export default function AuthenticatedApp() {
     };
   }, [handleCreateList, handleAddItem]);
 
-  // loading screen
+  if (!isAuthenticated) {
+    return <LandingPage />;
+  }
+
   if (
     userProfile === undefined ||
     rawLists === undefined ||
@@ -165,23 +183,11 @@ export default function AuthenticatedApp() {
     return <CreateUsername />;
   }
 
-  // no lists screen
-  if (lists.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-4xl font-bold mb-8">no lists yet!</h1>
-        <Button onClick={() => handleCreateList()}>create a new list</Button>
-      </div>
-    );
-  }
-
-  // user's valid teams
   const validTeams = teams?.filter(Boolean) as (Doc<"teams"> & { role: string })[] | undefined;
 
   return (
-    <>
+    <AppContext.Provider value={{ lists, selectedList, selectedListId, handleUpdateItem, handleAddItem, handleDeleteItem, focusedItemId, setFocusedItemId, handleCreateList, viewMode, setViewMode }}>
       <main className="relative md:flex h-screen">
-        {/* mobile drawer (the thing that you click to close the sidebar on mobile) */}
         <div
           className={clsx(
             "fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden",
@@ -192,7 +198,6 @@ export default function AuthenticatedApp() {
           )}
           onClick={() => setIsMobileDrawerOpen(false)}
         />
-        {/* mobile sidebar */}
         <div
           className={clsx(
             "fixed top-0 left-0 h-full bg-background-secondary z-30 w-3/4 p-4 border-r overflow-y-auto transition-transform duration-300 md:hidden",
@@ -210,15 +215,15 @@ export default function AuthenticatedApp() {
             personalLists={personalLists}
             teamLists={teamLists}
             selectedListId={selectedListId}
-            setSelectedListId={setSelectedListId}
+            setSelectedListId={(id) => navigate({ to: '/app/list/$listId', params: { listId: id }})}
             setListName={setListName}
             handleDeleteList={handleDeleteList}
             handleCreateList={handleCreateList}
             isSimpleMode={isSimpleMode}
+            onSettingsClick={() => setIsSettingsOpen(true)}
           />
         </div>
 
-        {/* desktop sidebar */}
         <div
           className={clsx(
             "hidden md:block border-r h-full overflow-y-auto transition-all duration-300 bg-tertiary",
@@ -237,16 +242,16 @@ export default function AuthenticatedApp() {
               personalLists={personalLists}
               teamLists={teamLists}
               selectedListId={selectedListId}
-              setSelectedListId={setSelectedListId}
+              setSelectedListId={(id) => navigate({ to: '/app/list/$listId', params: { listId: id }})}
               setListName={setListName}
               handleDeleteList={handleDeleteList}
               handleCreateList={handleCreateList}
               isSimpleMode={isSimpleMode}
+              onSettingsClick={() => setIsSettingsOpen(true)}
             />
           }
         </div>
 
-        {/* main content (status bar and list/gantt editor) */}
         <div 
           className={clsx(
             "flex flex-col w-full h-full transition-all duration-300",
@@ -262,41 +267,28 @@ export default function AuthenticatedApp() {
             setIsMobileDrawerOpen={setIsMobileDrawerOpen}
             lists={lists}
             selectedListId={selectedListId}
-            setSelectedListId={setSelectedListId}
+            setSelectedListId={(id) => navigate({ to: '/app/list/$listId', params: { listId: id }})}
             listName={listName}
             setListName={setListName}
             handleListNameChange={handleListNameChange}
             handleCreateList={() => handleCreateList()}
             viewMode={viewMode}
             setViewMode={setViewMode}
-            onSettingsClick={() => setIsSettingsOpen(true)}
           />
           <div className="flex-grow overflow-y-auto px-4 mt-16">
-            {selectedList && (viewMode === "list" || isSimpleMode) && (
-              <ListEditor
-                state={selectedList}
-                handleUpdateItem={handleUpdateItem}
-                handleAddItem={handleAddItem}
-                handleDeleteItem={handleDeleteItem}
-                focusedItemId={focusedItemId}
-                setFocusedItemId={setFocusedItemId}
-              />
-            )}
-            {selectedListId && viewMode === "gantt" && !isSimpleMode && (
-              <GanttView listId={selectedListId} />
-            )}
+            <Outlet />
           </div>
         </div>
-      </main>
-      <AnimatePresence>
         {isSettingsOpen && (
-          <Settings
-            selectedListId={selectedListId}
-            onClose={() => setIsSettingsOpen(false)}
-          />
+          <AnimatePresence>
+            <Settings
+              onClose={() => setIsSettingsOpen(false)}
+              selectedListId={selectedListId ?? null}
+            />
+          </AnimatePresence>
         )}
-      </AnimatePresence>
+      </main>
       <Toaster />
-    </>
+    </AppContext.Provider>
   );
 }

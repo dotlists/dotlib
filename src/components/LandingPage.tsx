@@ -21,7 +21,8 @@ export function LandingPage() {
             a collaborative workspace to manage tasks, track progress, and bring
             your team together. get started in seconds.
           </p>
-          <div className="w-full max-w-xs">
+          
+          <div className="w-full max-w-xs items-center justify-center flex">
             <SignIn />
           </div>
         </section>
