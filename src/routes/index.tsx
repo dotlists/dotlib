@@ -8,14 +8,14 @@ export const Route = createFileRoute('/')({
 })
 
 function Index() {
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const navigate = Route.useNavigate();
   
   React.useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       navigate({ to: '/app', replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   return (
     <LandingPage />
