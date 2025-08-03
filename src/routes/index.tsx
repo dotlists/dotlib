@@ -1,5 +1,5 @@
 import { LandingPage } from '@/components/LandingPage'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useConvexAuth } from 'convex/react';
 import React from 'react';
 
