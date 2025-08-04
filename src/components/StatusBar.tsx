@@ -57,6 +57,8 @@ export function StatusBar({
   setViewMode,
 }: StatusBarProps) {
   const { isSimpleMode } = useSettings();
+
+  // setSelectedListId(selectedListId ?? "" as Id<"lists">);
   const selectedList = lists.find((list) => list.id === selectedListId);
   const runSync = useMutation(api.github.runGithubSync);
   if (!selectedList) {
