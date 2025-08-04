@@ -215,6 +215,7 @@ export default function AuthenticatedApp() {
             handleDeleteList={handleDeleteList}
             handleCreateList={handleCreateList}
             isSimpleMode={isSimpleMode}
+            onSettingsClick={() => setIsSettingsOpen(true)}
           />
         </div>
 
@@ -242,6 +243,7 @@ export default function AuthenticatedApp() {
               handleDeleteList={handleDeleteList}
               handleCreateList={handleCreateList}
               isSimpleMode={isSimpleMode}
+              onSettingsClick={() => setIsSettingsOpen(true)}
             />
           }
         </div>
@@ -269,7 +271,6 @@ export default function AuthenticatedApp() {
             handleCreateList={() => handleCreateList()}
             viewMode={viewMode}
             setViewMode={setViewMode}
-            onSettingsClick={() => setIsSettingsOpen(true)}
           />
           <div className="flex-grow overflow-y-auto px-4 mt-16">
             {selectedList && (viewMode === "list" || isSimpleMode) && (
