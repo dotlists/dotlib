@@ -351,19 +351,17 @@ export default function AuthenticatedApp() {
           )}
         </Route>
       </main>
-      <Route path="/settings">
-        <AnimatePresence mode="wait">
-          {isSettingsOpen && (
-            <Settings
-              selectedListId={selectedListId}
-              onClose={() => {
-                setIsSettingsOpen(false);
-                navigate(`/app/list/${selectedListId}`);
-              }}
-            />
-          )}
-        </AnimatePresence>
-      </Route>
+      <AnimatePresence mode="wait">
+        {(location === "/app/settings" && isSettingsOpen) && (
+          <Settings
+            key="settings" // Important for exit animations!
+            selectedListId={selectedListId}
+            onClose={() => {
+              navigate(`/app/list/${selectedListId}`);
+            }}
+          />
+        )}
+      </AnimatePresence>
       <Toaster />
     </Route>
   );
