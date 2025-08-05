@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "@tanstack/react-router";
 
 interface DeleteConfirmationProps {
   onClose: () => void;
@@ -82,7 +81,6 @@ function DeleteConfirmation({ onClose }: DeleteConfirmationProps) {
 export function AccountSettings() {
   const { signOut } = useAuthActions();
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] = useState(false);
-  const navigate = useNavigate();
   return (
     <>
       <div>
@@ -92,10 +90,7 @@ export function AccountSettings() {
         </p>
         <div className="flex items-center space-x-2 mt-2">
           <Button
-            onClick={() => {
-              navigate({ to: '/' });
-              signOut();
-            }}
+            onClick={signOut}
           >
             sign out
           </Button>

@@ -79,6 +79,20 @@ export function ListItem({
   const subtasks = useQuery(api.subtasks.getSubtasks, { parentId: node.uuid });
   const createSubtask = useMutation(api.subtasks.createSubtask);
 
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const checkMultiLine = () => {
+        const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
+        setIsMultiLine(textarea.scrollHeight > lineHeight + 2);
+      };
+      const resizeObserver = new ResizeObserver(checkMultiLine);
+      resizeObserver.observe(textarea);
+      checkMultiLine(); // Initial check
+      return () => resizeObserver.disconnect();
+    }
+  }, [text]);
+
   const handleBreakdownTask = async () => {
     const subtaskStrings = await breakdownTask({
       listId,
@@ -116,20 +130,6 @@ export function ListItem({
       clearTimeout(handler);
     };
   }, [text, node.text, node.uuid, handleUpdateItem]);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      const checkMultiLine = () => {
-        const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight);
-        setIsMultiLine(textarea.scrollHeight > lineHeight + 2);
-      };
-      const resizeObserver = new ResizeObserver(checkMultiLine);
-      resizeObserver.observe(textarea);
-      checkMultiLine(); // Initial check
-      return () => resizeObserver.disconnect();
-    }
-  }, [text]);
 
   useEffect(() => {
     const textarea = textareaRef.current;

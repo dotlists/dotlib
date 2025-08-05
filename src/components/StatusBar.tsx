@@ -57,6 +57,8 @@ export function StatusBar({
   setViewMode,
 }: StatusBarProps) {
   const { isSimpleMode } = useSettings();
+
+  // setSelectedListId(selectedListId ?? "" as Id<"lists">);
   const selectedList = lists.find((list) => list.id === selectedListId);
   const runSync = useMutation(api.github.runGithubSync);
   if (!selectedList) {
@@ -134,11 +136,9 @@ export function StatusBar({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {
-              if (selectedListId) {
-                runSync({ listId: selectedListId });
-              }
-            }}
+            onClick={() => runSync({
+              listId: selectedListId == null ? undefined : selectedListId,
+            })}
           >
             <GithubIcon />
           </Button>
