@@ -18,11 +18,13 @@ export type SettingsPanels = "account" | "app" | "theme" | "advanced"
 
 export function Settings({ onClose, selectedListId }: SettingsProps) {
   const [activePanel, setActivePanel] = useState<SettingsPanels>("app");
-  return createPortal(
+
+  const content = (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
       style={{
         position: "fixed",
         top: 0,
@@ -67,9 +69,9 @@ export function Settings({ onClose, selectedListId }: SettingsProps) {
             {activePanel === "advanced" && <AdvancedSettings selectedListId={selectedListId}/>}
           </div>
         </div>
-        
       </motion.div>
-    </motion.div>,
-    document.body,
+    </motion.div>
   );
+
+  return createPortal(content, document.body);
 }

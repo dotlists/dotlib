@@ -131,6 +131,14 @@ export function ListItem({
     };
   }, [text, node.text, node.uuid, handleUpdateItem]);
 
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [text]);
+
   const handleCreateSubtask = async () => {
     if (newSubtaskText.trim() !== "") {
       await createSubtask({

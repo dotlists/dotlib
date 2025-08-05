@@ -1,3 +1,4 @@
+import { Route, useLocation } from "wouter"
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { StatusBar } from "./components/StatusBar";
@@ -22,15 +23,37 @@ type ConvexList = Doc<"lists"> & {
 
 type ViewMode = "list" | "gantt";
 
+function ListViewUpdater({
+  listId,
+  selectedListId,
+  setSelectedListId,
+  setListName,
+  lists,
+}: {
+  listId: Id<"lists">;
+  selectedListId: Id<"lists"> | null;
+  setSelectedListId: (id: Id<"lists">) => void;
+  setListName: (name: string) => void;
+  lists: ConvexList[];
+}) {
+  useEffect(() => {
+    if (selectedListId !== listId) {
+      setSelectedListId(listId);
+      const found = lists.find((l) => l.id === listId);
+      if (found) setListName(found.name);
+    }
+  }, [listId, selectedListId, setSelectedListId, setListName, lists]);
+  return null;
+}
+
 export default function AuthenticatedApp() {
+  const [location, navigate] = useLocation();
   const { isSimpleMode } = useSettings();
   const userProfile = useQuery(api.main.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
 
-  const [selectedListId, setSelectedListId] = useState<Id<"lists"> | null>(
-    null,
-  );
+  const [selectedListId, _setSelectedListId] = useState<Id<"lists"> | null>(null);
 
   const items = useQuery(
     api.lists.getItems,
@@ -73,6 +96,29 @@ export default function AuthenticatedApp() {
 
   const selectedList = lists.find(
     (list: ConvexList) => list.id === selectedListId,
+  );
+
+  const setSelectedListId = useCallback(
+    (id: Id<"lists"> | null) => {
+      const found = lists.find((list) => list.id === id);
+
+      if (id && found) {
+        _setSelectedListId(id);
+        setListName(found.name);
+        navigate(`/app/list/${id}`);
+      } else {
+        const fallback = lists[0];
+        if (fallback) {
+          _setSelectedListId(fallback.id);
+          setListName(fallback.name);
+          navigate(`/app/list/${fallback.id}`);
+        } else {
+          _setSelectedListId(null);
+          setListName("");
+        }
+      }
+    },
+    [lists, navigate, setListName]
   );
 
   const handleListNameChange = (name: string) => {
@@ -179,7 +225,7 @@ export default function AuthenticatedApp() {
   const validTeams = teams?.filter(Boolean) as (Doc<"teams"> & { role: string })[] | undefined;
 
   return (
-    <>
+    <Route path="/app" nest>
       <main className="relative md:flex h-screen">
         {/* mobile drawer (the thing that you click to close the sidebar on mobile) */}
         <div
@@ -215,6 +261,7 @@ export default function AuthenticatedApp() {
             handleDeleteList={handleDeleteList}
             handleCreateList={handleCreateList}
             isSimpleMode={isSimpleMode}
+            onSettingsClick={() => setIsSettingsOpen(true)}
           />
         </div>
 
@@ -242,61 +289,80 @@ export default function AuthenticatedApp() {
               handleDeleteList={handleDeleteList}
               handleCreateList={handleCreateList}
               isSimpleMode={isSimpleMode}
+              onSettingsClick={() => {
+                setIsSettingsOpen(true);
+                navigate("/app/settings");
+              }}
             />
           }
         </div>
 
         {/* main content (status bar and list/gantt editor) */}
-        <div 
-          className={clsx(
-            "flex flex-col w-full h-full transition-all duration-300",
-            {
-              "md:w-[calc(100%-20rem)]": isDesktopSidebarOpen,
-              "md:w-screen": !isDesktopSidebarOpen,
-            },
-          )}
-        >
-          <StatusBar
-            isDesktopSidebarOpen={isDesktopSidebarOpen}
-            setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
-            setIsMobileDrawerOpen={setIsMobileDrawerOpen}
-            lists={lists}
-            selectedListId={selectedListId}
-            setSelectedListId={setSelectedListId}
-            listName={listName}
-            setListName={setListName}
-            handleListNameChange={handleListNameChange}
-            handleCreateList={() => handleCreateList()}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            onSettingsClick={() => setIsSettingsOpen(true)}
-          />
-          <div className="flex-grow overflow-y-auto px-4 mt-16">
-            {selectedList && (viewMode === "list" || isSimpleMode) && (
-              <ListEditor
-                state={selectedList}
-                handleUpdateItem={handleUpdateItem}
-                handleAddItem={handleAddItem}
-                handleDeleteItem={handleDeleteItem}
-                focusedItemId={focusedItemId}
-                setFocusedItemId={setFocusedItemId}
+        <Route path="/list/:listId">
+          {params => (
+            <>
+              <ListViewUpdater 
+                listId={params.listId as Id<"lists">}
+                selectedListId={selectedListId}
+                setSelectedListId={setSelectedListId}
+                setListName={setListName}
+                lists={lists}
               />
-            )}
-            {selectedListId && viewMode === "gantt" && !isSimpleMode && (
-              <GanttView listId={selectedListId} />
-            )}
-          </div>
-        </div>
+              <div 
+                className={clsx(
+                  "flex flex-col w-full h-full transition-all duration-300",
+                  {
+                    "md:w-[calc(100%-20rem)]": isDesktopSidebarOpen,
+                    "md:w-screen": !isDesktopSidebarOpen,
+                  },
+                )}
+              >
+                <StatusBar
+                  isDesktopSidebarOpen={isDesktopSidebarOpen}
+                  setIsDesktopSidebarOpen={setIsDesktopSidebarOpen}
+                  setIsMobileDrawerOpen={setIsMobileDrawerOpen}
+                  lists={lists}
+                  selectedListId={selectedListId}
+                  setSelectedListId={setSelectedListId}
+                  listName={listName}
+                  setListName={setListName}
+                  handleListNameChange={handleListNameChange}
+                  handleCreateList={() => handleCreateList()}
+                  viewMode={viewMode}
+                  setViewMode={setViewMode}
+                />
+                <div className="flex-grow overflow-y-auto px-4 mt-16">
+                  {selectedList && (viewMode === "list" || isSimpleMode) && (
+                    <ListEditor
+                      state={selectedList}
+                      handleUpdateItem={handleUpdateItem}
+                      handleAddItem={handleAddItem}
+                      handleDeleteItem={handleDeleteItem}
+                      focusedItemId={focusedItemId}
+                      setFocusedItemId={setFocusedItemId}
+                    />
+                  )}
+                  {selectedListId && viewMode === "gantt" && !isSimpleMode && (
+                    <GanttView listId={selectedListId} />
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </Route>
       </main>
-      <AnimatePresence>
-        {isSettingsOpen && (
+      <AnimatePresence mode="wait">
+        {(location === "/app/settings" && isSettingsOpen) && (
           <Settings
+            key="settings" // Important for exit animations!
             selectedListId={selectedListId}
-            onClose={() => setIsSettingsOpen(false)}
+            onClose={() => {
+              navigate(`/app/list/${selectedListId}`);
+            }}
           />
         )}
       </AnimatePresence>
       <Toaster />
-    </>
+    </Route>
   );
 }

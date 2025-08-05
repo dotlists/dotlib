@@ -1,4 +1,4 @@
-import { ChevronsLeft, List, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { ChevronsLeft, List, MoreVertical, Plus, SettingsIcon, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { TeamManager } from "./TeamManager";
 import type { Doc, Id } from "@/lib/convex";
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "./ui/dropdown-menu";
+import { Notifications } from "./Notifications";
 
 type ConvexItem = Doc<"items"> & { uuid: Id<"items"> };
 
@@ -36,6 +37,7 @@ interface SidebarProps {
   handleDeleteList: (id: Id<"lists">) => void;
   handleCreateList: () => void;
   isSimpleMode: boolean;
+  onSettingsClick: () => void;
 }
 
 export function Sidebar ({
@@ -50,7 +52,8 @@ export function Sidebar ({
   setListName,
   handleDeleteList,
   handleCreateList,
-  isSimpleMode
+  isSimpleMode,
+  onSettingsClick,
 }: SidebarProps) {
   return (
     <>
@@ -59,6 +62,10 @@ export function Sidebar ({
           <img src="/favicon.ico" alt="logo" className="size-7 mr-2" />
           <span className="font-bold text-lg font-heading pt-0.5">dotlists</span>
         </div>
+        <Notifications />
+        <Button variant="ghost" size="icon" onClick={onSettingsClick}>
+          <SettingsIcon className="h-5 w-5" />
+        </Button>
         <Button
           className="-mr-7"
           variant="ghost"
