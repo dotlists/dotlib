@@ -1,6 +1,7 @@
 import { useConvexAuth } from "convex/react";
 import { LandingPage } from "./components/LandingPage";
 import React, { Suspense } from "react";
+import { Route } from "wouter";
 //
 const AuthenticatedApp = React.lazy(() => import("./AuthenticatedApp"));
 
@@ -8,7 +9,11 @@ export default function App() {
   const { isAuthenticated } = useConvexAuth();
 
   if (!isAuthenticated) {
-    return <LandingPage />;
+    return (
+      <Route path="/">
+        <LandingPage />
+      </Route>
+    );
   }
 
   return (
