@@ -40,42 +40,46 @@ export function ListEditor({
     const stateB = b.state as keyof typeof stateOrder;
     const stateDiff = stateOrder[stateA] - stateOrder[stateB];
     if (stateDiff !== 0) return stateDiff;
-    return a.text.localeCompare(b.text);
+    return a._creationTime - b._creationTime;
   });
 
   return (
-    <motion.ul className="px-2 md:px-3 mb-0">
-      <motion.li
+    <>
+      <motion.div
         layout
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex justify-center my-2"
+        className="relative my-2"
       >
-        <Button
-          onClick={() => handleAddItem("", "red")}
-          variant="outline"
-          className={clsx(
-            "px-8",
-            theme === "blue" && "bg-blue-500 text-white hover:bg-blue-600"
-          )}
-        >
-          add new task <span className={clsx("ml-2 text-xs", theme === "blue" ? "text-blue-200" : "text-muted-foreground")}> (ctrl+shift+n)</span>
-        </Button>
-      </motion.li>
-      <AnimatePresence>
-        {sortedNodes.map((node) => (
-          <ListItem
-            key={node.uuid}
-            node={node}
-            handleUpdateItem={handleUpdateItem}
-            handleDeleteItem={handleDeleteItem}
-            focusedItemId={focusedItemId}
-            setFocusedItemId={setFocusedItemId}
-            listId={state.id}
-            teamId={state.teamId}
-          />
-        ))}
-      </AnimatePresence>
-    </motion.ul>
+        <div className="flex justify-center">
+          <Button
+            onClick={() => handleAddItem("", "red")}
+            variant="outline"
+            className={clsx(
+              "px-8",
+              theme === "blue" && "bg-blue-500 text-white hover:bg-blue-600"
+            )}
+          >
+            add new task <span className={clsx("ml-2 text-xs", theme === "blue" ? "text-blue-200" : "text-muted-foreground")}> (ctrl+shift+n)</span>
+          </Button>
+        </div>
+      </motion.div>
+      <motion.ul className="px-2 md:px-3 mb-0">
+        <AnimatePresence>
+          {sortedNodes.map((node) => (
+            <ListItem
+              key={node.uuid}
+              node={node}
+              handleUpdateItem={handleUpdateItem}
+              handleDeleteItem={handleDeleteItem}
+              focusedItemId={focusedItemId}
+              setFocusedItemId={setFocusedItemId}
+              listId={state.id}
+              teamId={state.teamId}
+            />
+          ))}
+        </AnimatePresence>
+      </motion.ul>
+    </>
   );
 }

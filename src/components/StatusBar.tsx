@@ -17,6 +17,7 @@ import {
   List,
   BarChart3,
   GithubIcon,
+  PanelsTopLeftIcon,
 } from "lucide-react";
 import { useMutation } from "convex/react";
 
@@ -142,6 +143,22 @@ export function StatusBar({
           >
             <GithubIcon />
           </Button>
+          
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <PanelsTopLeftIcon className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => {
+
+              }}>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           {isSimpleMode && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

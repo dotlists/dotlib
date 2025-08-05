@@ -146,16 +146,16 @@ export default function AuthenticatedApp() {
     }
   }, [createItem, selectedListId]);
 
-  const handleUpdateItem = async (
+  const handleUpdateItem = useCallback(async (
     id: Id<"items">,
     updates: Partial<Doc<"items">>,
   ) => {
     await updateItem({ id, ...updates });
-  };
+  }, [updateItem]);
 
-  const handleDeleteItem = async (id: Id<"items">) => {
+  const handleDeleteItem = useCallback(async (id: Id<"items">) => {
     await deleteItem({ id });
-  };
+  }, [deleteItem]);
 
   const handleDeleteList = async (id: Id<"lists">) => {
     await deleteList({ id });
