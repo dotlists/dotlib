@@ -31,7 +31,7 @@ export function Settings({ onClose, selectedListId }: SettingsProps) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "var(--custom-overlay-bg, rgba(34,34,59,0.85))",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

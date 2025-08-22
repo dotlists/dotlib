@@ -5,6 +5,9 @@ import { StatusBar } from "./components/StatusBar";
 import { ListEditor } from "./components/ListEditor";
 import { CreateUsername } from "./components/CreateUsername";
 import { GanttView } from "./components/GanttView";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
 import { Settings } from "./components/Settings/Settings";
 import clsx from "clsx";
 import { useSettings } from "./contexts/SettingsContext";
@@ -52,6 +55,33 @@ export default function AuthenticatedApp() {
   const userProfile = useQuery(api.main.getMyUserProfile);
   const rawLists = useQuery(api.lists.getLists);
   const teams = useQuery(api.teams.getTeams);
+
+  const ganttRef = useRef<HTMLDivElement | null>(null);
+
+  const handleExport = async () => {
+    if (!ganttRef.current) return;
+    try {
+      const canvas = await html2canvas(ganttRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = (pdfHeight - imgHeight * ratio) / 2;
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save('gantt-chart.pdf');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to export PDF:', error);
+    }
+  };
 
   const [selectedListId, _setSelectedListId] = useState<Id<"lists"> | null>(null);
 
@@ -330,6 +360,7 @@ export default function AuthenticatedApp() {
                   handleCreateList={() => handleCreateList()}
                   viewMode={viewMode}
                   setViewMode={setViewMode}
+                  handleExport={handleExport}
                 />
                 <div className="flex-grow overflow-y-auto px-4 mt-16">
                   {selectedList && (viewMode === "list" || isSimpleMode) && (
@@ -343,7 +374,10 @@ export default function AuthenticatedApp() {
                     />
                   )}
                   {selectedListId && viewMode === "gantt" && !isSimpleMode && (
-                    <GanttView listId={selectedListId} />
+                    <GanttView
+                      listId={selectedListId}
+                      ganttRef={ganttRef}
+                    />
                   )}
                 </div>
               </div>

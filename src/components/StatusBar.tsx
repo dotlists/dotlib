@@ -41,6 +41,7 @@ interface StatusBarProps {
   handleCreateList: () => void;
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
+  handleExport?: () => void;
 }
 
 export function StatusBar({
@@ -56,6 +57,7 @@ export function StatusBar({
   handleCreateList,
   viewMode,
   setViewMode,
+  handleExport,
 }: StatusBarProps) {
   const { isSimpleMode } = useSettings();
 
@@ -152,9 +154,12 @@ export function StatusBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => {
-
-              }}>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (typeof handleExport === "function") handleExport();
+                }}
+              >
+                Export as PDF
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -201,7 +206,7 @@ export function StatusBar({
             className="transition-all duration-100"
             style={{
               width: `${redPct}%`,
-              backgroundColor: redCount > 0 ? "#ef4444" : "transparent",
+              backgroundColor: redCount > 0 ? "var(--destructive)" : "transparent",
               transition: "width 0.3s",
             }}
           />
@@ -209,7 +214,7 @@ export function StatusBar({
             className="transition-all duration-100"
             style={{
               width: `${yellowPct}%`,
-              backgroundColor: yellowCount > 0 ? "#fde047" : "transparent",
+              backgroundColor: yellowCount > 0 ? "var(--accent)" : "transparent",
               transition: "width 0.3s",
             }}
           />
@@ -217,7 +222,7 @@ export function StatusBar({
             className="transition-all duration-100"
             style={{
               width: `${greenPct}%`,
-              backgroundColor: greenCount > 0 ? "#22c55e" : "transparent",
+              backgroundColor: greenCount > 0 ? "var(--primary)" : "transparent",
               transition: "width 0.3s",
             }}
           />

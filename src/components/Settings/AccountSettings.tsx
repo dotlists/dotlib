@@ -25,7 +25,7 @@ function DeleteConfirmation({ onClose }: DeleteConfirmationProps) {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "var(--muted, #adb5bd)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

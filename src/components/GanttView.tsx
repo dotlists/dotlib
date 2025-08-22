@@ -1,4 +1,4 @@
-import { useRef, memo, useState } from "react";
+import { memo, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/lib/convex";
 import type { Id } from "@/lib/convex";
@@ -28,7 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, 
   MoreVertical, 
-  Download, 
+
   Plus, 
   Edit2, 
   Trash2,
@@ -36,11 +36,11 @@ import {
 } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+
 
 interface GanttViewProps {
   listId: Id<"lists">;
+  ganttRef: React.RefObject<HTMLDivElement | null>;
 }
 
 interface Task {
@@ -50,7 +50,7 @@ interface Task {
   end: string;
   progress: number;
   custom_class: string;
-  subtasks?: any[];
+  subtasks?: unknown[];
 }
 
 interface TaskDialogData {
@@ -59,8 +59,7 @@ interface TaskDialogData {
   mode: 'edit' | 'create';
 }
 
-export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
-  const ganttRef = useRef<HTMLDivElement | null>(null);
+export const GanttView = memo(function GanttView({ listId, ganttRef }: GanttViewProps) {
   const [taskDialog, setTaskDialog] = useState<TaskDialogData>({ open: false, mode: 'create' });
   const [taskName, setTaskName] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
@@ -157,35 +156,6 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
     }
   };
 
-  const handleExport = async () => {
-    if (!ganttRef.current) return;
-
-    try {
-      const canvas = await html2canvas(ganttRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('landscape', 'mm', 'a4');
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = (pdfHeight - imgHeight * ratio) / 2;
-      
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save('gantt-chart.pdf');
-    } catch (error) {
-      console.error('Failed to export PDF:', error);
-    }
-  };
-
   const { days, minDate } = getTimelineData();
 
   return (
@@ -202,10 +172,6 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
           <Button onClick={handleCreateTask} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Task
-          </Button>
-          <Button onClick={handleExport} variant="outline" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export PDF
           </Button>
         </div>
       </div>
