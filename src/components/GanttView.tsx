@@ -123,18 +123,85 @@ export const GanttView = memo(function GanttView({ listId }: GanttViewProps) {
     };
   }, [deleteItem, updateItem]);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (ganttRef.current) {
       const svg = ganttRef.current;
+      
+      // Get SVG dimensions
+      const svgRect = svg.getBoundingClientRect();
+      const svgWidth = svgRect.width || 800;
+      const svgHeight = svgRect.height || 600;
+      
+      // Create a canvas element
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        console.error('Could not get canvas context');
+        return;
+      }
+      
+      // Set canvas size with scale factor for better quality
+      const scale = 2;
+      canvas.width = svgWidth * scale;
+      canvas.height = svgHeight * scale;
+      ctx.scale(scale, scale);
+      
+      // Convert SVG to data URL
       const svgData = new XMLSerializer().serializeToString(svg);
-      const doc = new jsPDF("landscape");
-      doc.html(svgData, {
-        callback: function (doc) {
-          doc.save("gantt-chart.pdf");
-        },
-        x: 10,
-        y: 10,
-      });
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      
+      // Create an image element and load the SVG
+      const img = new Image();
+      
+      img.onload = () => {
+        // Draw the image on canvas
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, svgWidth, svgHeight);
+        ctx.drawImage(img, 0, 0, svgWidth, svgHeight);
+        
+        // Convert canvas to image data
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Create PDF
+        const doc = new jsPDF('landscape');
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = doc.internal.pageSize.getHeight();
+        
+        // Calculate scaling to fit the page while maintaining aspect ratio
+        const imgAspectRatio = svgWidth / svgHeight;
+        const pdfAspectRatio = pdfWidth / pdfHeight;
+        
+        let finalWidth, finalHeight;
+        if (imgAspectRatio > pdfAspectRatio) {
+          // Image is wider, scale by width
+          finalWidth = pdfWidth - 20; // 10px margin on each side
+          finalHeight = finalWidth / imgAspectRatio;
+        } else {
+          // Image is taller, scale by height
+          finalHeight = pdfHeight - 20; // 10px margin on top and bottom
+          finalWidth = finalHeight * imgAspectRatio;
+        }
+        
+        // Center the image
+        const x = (pdfWidth - finalWidth) / 2;
+        const y = (pdfHeight - finalHeight) / 2;
+        
+        // Add image to PDF
+        doc.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+        doc.save('gantt-chart.pdf');
+        
+        // Clean up
+        URL.revokeObjectURL(svgUrl);
+      };
+      
+      img.onerror = () => {
+        console.error('Failed to load SVG image');
+        URL.revokeObjectURL(svgUrl);
+      };
+      
+      img.src = svgUrl;
     }
   };
 
