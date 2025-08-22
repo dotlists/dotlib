@@ -339,32 +339,33 @@
   }
 }
 
-/* Gantt chart styles */
-.gantt .bar {
-  stroke: #333;
-  stroke-width: 1px;
-  cursor: pointer;
+/* Modern Gantt chart styles - integrated with design system */
+.gantt-task-bar {
+  transition: all 0.2s ease-in-out;
 }
 
-.gantt .bar-progress {
-  fill: rgba(0, 0, 0, 0.2);
+.gantt-task-bar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.gantt .bar-label {
-  font-size: 12px;
-  fill: #333;
+/* Custom scrollbar for timeline */
+.gantt-timeline::-webkit-scrollbar {
+  height: 6px;
 }
 
-.gantt-task-red .bar-progress {
-  fill: #f36868; /* Red */
+.gantt-timeline::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
 }
 
-.gantt-task-yellow .bar-progress {
-  fill: #f5d76e; /* Yellow */
+.gantt-timeline::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
 }
 
-.gantt-task-green .bar-progress {
-  fill: #34d399; /* Green */
+.gantt-timeline::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 
