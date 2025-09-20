@@ -28,3 +28,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </ConvexAuthProvider>
   </React.StrictMode>,
 );
+
+// Register service worker for PWA installability and offline caching
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .catch(() => {
+        // No-op on failure to avoid affecting app behavior
+      });
+  });
+}
